@@ -1,0 +1,11 @@
+GET http://localhost:3001/
+Authorization: Bearer eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpZCI6IjE4MzFlMGEwLThjYjgtNDVjOC1hNzI1LTJiNGRmMDcxNDU1YyIsInBob25lTnVtYmVyRW1haWwiOiJhIiwiaWF0IjoxNjU3NTA2MzUwLCJleHAiOjE2NTc1MDYzNjV9.7Zc1hZb5Hj309ab3hEinReq2_sa6Cyilg6-CC2Ysty0
+
+###
+
+get http://localhost:3001/s
+
+{
+    "notcall": "Bearer ffe"
+}
+
