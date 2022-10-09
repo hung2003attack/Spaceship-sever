@@ -9,7 +9,7 @@ function DateTime() {
         '  ' +
         currentdate.getHours() +
         ':' +
-        currentdate.getMinutes() +
+        (currentdate.getMinutes() + 1) +
         ':' +
         currentdate.getSeconds();
     return datetime;

@@ -3,6 +3,8 @@ require('dotenv').config();
 
 class loginControllner {
     login = async (req: any, res: any) => {
+        console.log('ok lo');
+
         const phoneNumberEmail = req.body.phoneNumberEmail;
         const password = req.body.password;
 

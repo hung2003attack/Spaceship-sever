@@ -35,12 +35,15 @@ class user {
                             } else {
                                 await db.tokens.update({ accessToken: refreshToken }, { where: { id: user.idToken } });
                             }
-
-                            await res.cookie('fr', refreshToken, {
+                            var now = new Date();
+                            now.setTime(now.getTime() + 1 * 3600 * 1000);
+                            res.cookie('sn', refreshToken, {
+                                signed: true,
                                 httpOnly: true,
                                 secure: false,
                                 path: '/',
                                 sameSite: 'strict',
+                                expires: new Date(new Date().getTime() + 365 * 86409000),
                             });
                             userData.data = { ...user, accessToken };
                         } else {

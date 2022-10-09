@@ -1,21 +1,21 @@
 import jwt from 'jsonwebtoken';
 class JWTVERIFY {
     verifyToken = async (req: any, res: any, next: any) => {
-        const authHeader = await req.headers.notcall;
+        const authHeader = (await req.headers.notcall) || (await req.body.headers.notcall);
         console.log('authHeader', authHeader, req.headers);
+        console.log('body', req.body);
 
-        console.log('11', authHeader);
         if (authHeader) {
             const token = authHeader && authHeader.split(' ')[1];
             console.log('hello', token);
 
             if (!token) {
-                return res.status(401).json("You're not authenticated!");
+                return res.status(401).json({ status: 0, message: "You're not authenticated!" });
             } else {
                 try {
                     await jwt.verify(token, `${process.env.ACCESS_TOKEN_LOGIN}`, (err: any, user: any) => {
                         if (err) {
-                            return res.status(403).json('Token is invalid');
+                            return res.status(403).json({ status: 0, message: 'Token is invalid' });
                         }
 
                         req.user = user;
@@ -29,9 +29,7 @@ class JWTVERIFY {
                 }
             }
         } else {
-            console.log('no response');
-
-            return res.status(401).json("You're not authenticated!");
+            return res.status(401).json({ status: 0, message: "You're not authenticated!" });
         }
     };
     verifyTokenDelete = async (req: any, res: any, next: any) => {
@@ -43,7 +41,7 @@ class JWTVERIFY {
             if (req.user.id === req.body.id || req.user.admin === req.params.admin) {
                 next();
             } else {
-                return res.status(401).json("Your're not allowed to  DELETE other");
+                return res.status(401).json({ status: 0, message: "Your're not allowed to  DELETE other" });
             }
         });
     };

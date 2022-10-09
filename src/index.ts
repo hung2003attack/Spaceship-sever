@@ -16,7 +16,7 @@ app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser());
+app.use(cookieParser(process.env.SECRET));
 
 Connection();
 route(app);
