@@ -1,7 +1,14 @@
 'use strict';
 
 const { Model } = require('sequelize');
-module.exports = (sequelize: any, DataTypes: { STRING: string; BOOLEAN: boolean }) => {
+module.exports = (
+    sequelize: any,
+    DataTypes: {
+        [x: string]: any;
+        STRING: string;
+        BOOLEAN: boolean;
+    },
+) => {
     class user extends Model {
         /**
          * Helper method for defining associations.
@@ -29,9 +36,9 @@ module.exports = (sequelize: any, DataTypes: { STRING: string; BOOLEAN: boolean 
             adress: DataTypes.STRING,
             skill: DataTypes.STRING,
             birthDate: DataTypes.STRING,
-
             occupation: DataTypes.STRING,
             experience: DataTypes.STRING,
+            createdAt: DataTypes.DATE,
         },
         {
             sequelize,

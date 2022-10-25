@@ -1,10 +1,12 @@
 import bcrypt from 'bcryptjs';
+import moment from 'moment';
 const db = require('../../models');
 import { v4 as primaryKey } from 'uuid';
 import UserIT from '../interface/inTerFaceUser';
 import UserSecurity from './checkSecurity';
+import 'moment/locale/vi';
+moment.locale('vi');
 require('dotenv').config();
-
 class UserManipulation {
     addUser = async (data: UserIT) => {
         return new Promise(async (resolve, reject) => {
@@ -20,10 +22,15 @@ class UserManipulation {
                 });
 
                 if (checkPhoneNumberEmail.length >= 3 || checkPassword.includes(true) === true) {
-                    resolve({ result: '', check: false });
+                    resolve({ result: 'Creation Failed', check: 3 });
                     return;
                 } else {
                     try {
+                        const time =
+                            moment().get('hour') + 7 + ':' + moment().get('minute') + ':' + moment().get('second');
+                        const date = moment().format('YYYY-MM-DD') + ' ' + time;
+                        console.log(date, 'date');
+
                         const password = await UserSecurity.password(data.password);
                         db.users.create({
                             id: primaryKey(),
@@ -34,8 +41,9 @@ class UserManipulation {
                             birthDate: data.birthDate,
                             idToken: primaryKey(),
                             admin: false,
+                            createdAt: date,
                         });
-                        resolve({ result: 'ok, Created Successful', check: true });
+                        resolve({ result: 'ok, Created Successful', check: 1 });
                     } catch (err) {
                         reject(err);
                     }

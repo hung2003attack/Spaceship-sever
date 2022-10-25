@@ -4,6 +4,8 @@ class registerControlle {
     register = async (req: any, res: any, next: any) => {
         try {
             const message: any = await UserManipulation.addUser(req.body.params);
+            console.log(message, 'dayyyyyyyyyyyyyyyyyy');
+
             if (message.check) {
                 return res.status(200).json(message);
             } else {

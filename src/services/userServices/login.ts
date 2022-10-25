@@ -35,8 +35,6 @@ class user {
                             } else {
                                 await db.tokens.update({ accessToken: refreshToken }, { where: { id: user.idToken } });
                             }
-                            var now = new Date();
-                            now.setTime(now.getTime() + 1 * 3600 * 1000);
                             res.cookie('sn', refreshToken, {
                                 signed: true,
                                 httpOnly: true,
@@ -47,16 +45,13 @@ class user {
                             });
                             userData.data = { ...user, accessToken };
                         } else {
-                            userData.errCode = 1;
-                            userData.errMessage = 'wrong account or password!';
+                            userData.errCode = 3;
                         }
                     } else {
                         userData.errCode = 3;
-                        userData.errMessage = 'wrong account or password!';
                     }
                 } else {
-                    userData.errCode = 2;
-                    userData.errMessage = 'wrong account or password!';
+                    userData.errCode = 3;
                 }
                 resolve(userData);
             } catch (err) {

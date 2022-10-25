@@ -3,7 +3,7 @@ import route from './routes';
 import morgan from 'morgan';
 import bodyParser from 'body-parser';
 import viewEngine from './config/configEngine';
-import Connection from './connectDatabase/connect';
+import Server from './connectDatabase/connect';
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import routeSN from './routes/socialNetwork/index';
@@ -18,7 +18,7 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(cookieParser(process.env.SECRET));
 
-Connection();
+Server.Connection();
 route(app);
 routeSN(app);
 viewEngine(app);
