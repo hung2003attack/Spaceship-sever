@@ -30,7 +30,6 @@ module.exports = (
             background: DataTypes.STRING,
             avatar: DataTypes.STRING,
             admin: DataTypes.BOOLEAN,
-            idToken: DataTypes.STRING,
             hobby: DataTypes.STRING,
             strengths: DataTypes.STRING,
             adress: DataTypes.STRING,

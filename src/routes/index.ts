@@ -1,16 +1,18 @@
 import authenticationRoute from './auth/login';
 import registerRoute from './auth/register';
-import deleteRouter from './user/delete';
 import refreshRouter from './auth/refresh';
 import logOutRouter from './auth/logOut';
 import jwtAuth from '../middleware/jwtAuth';
 import userAccount from './userAccounts';
+import otpRouter from './auth/otpRouter';
+import accountRouter from './account/account';
 function route(app: any) {
-    app.use('/login', authenticationRoute);
-    app.use('/register', registerRoute);
-    app.use('/refresh', refreshRouter);
-    app.use('/logout', jwtAuth.verifyToken, logOutRouter);
-    app.use('/delete', deleteRouter);
-    app.use('/', jwtAuth.verifyToken, userAccount);
+    app.use('/api/login', authenticationRoute);
+    app.use('/api/register', registerRoute);
+    app.use('/api/refresh', refreshRouter);
+    app.use('/api/logout', jwtAuth.verifyToken, logOutRouter);
+    app.use('/api/otp', otpRouter);
+    app.use('/api/account', accountRouter);
+    app.use('/api/', jwtAuth.verifyToken, userAccount);
 }
 export default route;

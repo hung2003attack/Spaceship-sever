@@ -13,7 +13,7 @@ module.exports = {
                 },
             })
             .then(() => {
-                const sql = `ALTER TABLE tokens ADD CONSTRAINT FRK_tokens_users FOREIGN KEY (id) REFERENCES users(idToken)`;
+                const sql = `ALTER TABLE tokens ADD CONSTRAINT FRK_tokens_users FOREIGN KEY (id) REFERENCES users(id)`;
                 return queryInterface.sequelize.query(sql, { raw: true });
             });
     },

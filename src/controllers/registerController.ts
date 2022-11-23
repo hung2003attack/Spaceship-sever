@@ -1,16 +1,14 @@
-import UserManipulation from '../services/userServices/addUser';
+import register from '../services/authServices/registerS';
 
 class registerControlle {
     register = async (req: any, res: any, next: any) => {
         try {
-            const message: any = await UserManipulation.addUser(req.body.params);
+            console.log('body', req.body);
+
+            const message: any = await register.add(req.body.params);
             console.log(message, 'dayyyyyyyyyyyyyyyyyy');
 
-            if (message.check) {
-                return res.status(200).json(message);
-            } else {
-                return res.status(200).json(message);
-            }
+            return res.status(200).json(message);
         } catch (err) {
             console.log('addUser', err);
         }

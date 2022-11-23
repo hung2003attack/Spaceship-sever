@@ -1,10 +1,11 @@
 const { Sequelize } = require('sequelize');
+import mongoose from 'mongoose';
 require('dotenv').config();
 
-class Server {
-    Connection() {
+class Sever {
+    ConnectMySQL() {
         const sequelize = new Sequelize(
-            process.env.DB_DATABASENAME || 'connectWorld',
+            process.env.DB_DATABASENAME || 'spaceship',
             process.env.DB_USER || 'root',
             process.env.DB_PASSWORD || 'hung01645615023',
             {
@@ -23,6 +24,20 @@ class Server {
         };
         connectDB();
     }
+    ConnectMongoDB = async () => {
+        try {
+            await mongoose.connect(
+                'mongodb+srv://Spaceship:hung0507200301645615023@cluster0.chumwfw.mongodb.net/spaceship',
+            );
+            console.log('Connected to MongoDB Successful!');
+        } catch (error) {
+            console.log('Connected to MongoDB Faild!');
+        }
+    };
+    connect = async () => {
+        await this.ConnectMySQL();
+        this.ConnectMongoDB();
+    };
 }
 
-export default new Server();
+export default new Sever();

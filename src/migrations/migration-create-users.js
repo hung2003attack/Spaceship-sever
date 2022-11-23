@@ -20,7 +20,6 @@ module.exports = {
             avatar: { type: Sequelize.TEXT, },
             background: { type: Sequelize.TEXT },
             admin: { type: Sequelize.BOOLEAN, default: true },
-            idToken: { type: Sequelize.STRING, allowNull: false, unique: true },
             hobby: { type: Sequelize.STRING(500) },
             strengths: { type: Sequelize.STRING(500) },
             adress: { type: Sequelize.STRING },

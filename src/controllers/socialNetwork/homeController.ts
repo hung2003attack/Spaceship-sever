@@ -1,4 +1,4 @@
-import userService from '../../services/userServices/socialNetwork/home';
+import userService from '../../services/socialNetwork/home';
 class homeController {
     search = () => {};
     getHome = async (req: any, res: any, next: any) => {

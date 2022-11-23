@@ -3,7 +3,7 @@ module.exports = {
     development: {
         username: process.env.DB_USER || 'root',
         password: process.env.DB_PASSWORD || 'hung01645615023',
-        database: process.env.DB_DATABASE || 'connectWorld',
+        database: process.env.DB_DATABASENAME || 'spaceship',
         host: process.env.DB_HOST || 'localhost',
         port: process.env.DB_PORT || 3037,
         dialect: 'mysql',

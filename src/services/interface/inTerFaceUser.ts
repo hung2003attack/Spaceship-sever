@@ -1,11 +1,11 @@
 interface UserIT {
     id: string;
-    fullName: string;
+    name: string;
     nickName: string;
     password: string;
-    phoneNumberEmail: string;
+    phoneMail: string;
     avatar: string;
-    birthDate: string;
+    date: string;
     gender: string;
 }
 export default UserIT;

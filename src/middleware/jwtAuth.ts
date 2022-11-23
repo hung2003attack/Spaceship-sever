@@ -1,26 +1,22 @@
 import jwt from 'jsonwebtoken';
+import token from '../services/tokensService/token';
 class JWTVERIFY {
     verifyToken = async (req: any, res: any, next: any) => {
-        const authHeader = (await req.headers.notcall) || (await req.body.headers.notcall);
-        console.log('authHeader', authHeader, req.headers);
-        console.log('body', req.body);
-
-        if (authHeader) {
-            const token = authHeader && authHeader.split(' ')[1];
-            console.log('hello', token);
-
-            if (!token) {
-                return res.status(401).json({ status: 0, message: "You're not authenticated!" });
+        const idUser = await req.cookies.k_user;
+        const refreshToken = await req.signedCookies.sn;
+        const authHeader = await req.headers.notcall;
+        if (authHeader && idUser && refreshToken) {
+            const tokenc = authHeader && authHeader.split(' ')[1];
+            if (!tokenc) {
+                return res.status(401).json({ message: 'Unauthorized!' });
             } else {
                 try {
-                    await jwt.verify(token, `${process.env.ACCESS_TOKEN_LOGIN}`, (err: any, user: any) => {
-                        if (err) {
-                            return res.status(403).json({ status: 0, message: 'Token is invalid' });
+                    await jwt.verify(tokenc, `${process.env.ACCESS_TOKEN_LOGIN}`, (err: any, user: any) => {
+                        if (err || user.id !== idUser) {
+                            token.deleteToken(res);
+                            return res.status(403).json({ status: 0, message: 'Forbidden' });
                         }
-
                         req.user = user;
-                        console.log('verify454');
-
                         next();
                     });
                 } catch (error) {
@@ -29,13 +25,12 @@ class JWTVERIFY {
                 }
             }
         } else {
-            return res.status(401).json({ status: 0, message: "You're not authenticated!" });
+            token.deleteToken(res);
+            return res.status(401).json({ status: 0, message: "You're not11 authenticated!" });
         }
     };
     verifyTokenDelete = async (req: any, res: any, next: any) => {
         await this.verifyToken(req, res, () => {
-            console.log('dằda');
-
             console.log('a', req.user.id, req.params.id, 'req.body.id', req.body.id);
             console.log('b', req.user, req.params);
             if (req.user.id === req.body.id || req.user.admin === req.params.admin) {
