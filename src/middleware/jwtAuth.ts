@@ -4,7 +4,9 @@ class JWTVERIFY {
     verifyToken = async (req: any, res: any, next: any) => {
         const idUser = await req.cookies.k_user;
         const refreshToken = await req.signedCookies.sn;
-        const authHeader = await req.headers.notcall;
+        const authHeader = await req.cookies.tks;
+        console.log(idUser, refreshToken, authHeader, req.cookies.tks);
+
         if (authHeader && idUser && refreshToken) {
             const tokenc = authHeader && authHeader.split(' ')[1];
             if (!tokenc) {
@@ -25,7 +27,6 @@ class JWTVERIFY {
                 }
             }
         } else {
-            token.deleteToken(res);
             return res.status(401).json({ status: 0, message: "You're not11 authenticated!" });
         }
     };

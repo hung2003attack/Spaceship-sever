@@ -13,14 +13,10 @@ class user {
                 console.log('isExist', isExist);
                 if (status && user) {
                     const checkP = bcrypt.compareSync(password, user.password);
-                    console.log('p');
-
                     if (checkP) {
-                        console.log('s');
-
                         delete user.password;
                         delete user.phoneNumberEmail;
-                        userData.errCode = 0;
+                        userData.errCode = 1;
                         const accessToken = await Token.accessTokenF(user);
                         const refreshToken = await Token.refreshTokenF(user);
                         Object.freeze(user);
@@ -34,10 +30,10 @@ class user {
                         });
                         userData.data = { ...user, accessToken };
                     } else {
-                        userData.errCode = 3;
+                        userData.errCode = 0;
                     }
                 } else {
-                    userData.errCode = 3;
+                    userData.errCode = 0;
                 }
                 resolve(userData);
             } catch (err) {

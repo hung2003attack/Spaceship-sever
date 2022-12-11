@@ -18,13 +18,12 @@ class OTP {
             try {
                 const otpHash = await Security.hash(String(otp));
                 const data: any = await Prohibit.findOne({ email: phoneMail }).select('sended');
-                console.log('d', data);
                 if (data?.sended <= 4 || !data) {
                     const dbSend = await VerifyMail.create({
                         email: phoneMail,
                         otp: otpHash,
                     });
-                    if (data) {
+                    if (data?.sended > 0 === true) {
                         await Prohibit.updateOne({
                             sended: data.sended + 1,
                         });
@@ -83,6 +82,7 @@ class OTP {
         return new Promise(async (resolve, reject) => {
             try {
                 const data = await VerifyMail.find({ email: phoneMail }).exec();
+
                 if (data.length > 0) {
                     const checkOTP = await bcrypt.compareSync(otp, data[data.length - 1].otp);
                     if (checkOTP) resolve({ status: 1, message: 'ok' });

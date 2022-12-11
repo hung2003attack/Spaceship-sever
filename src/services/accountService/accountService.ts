@@ -1,3 +1,5 @@
+import Security from '../authServices/checkSecurity';
+import bcrypt from 'bcryptjs';
 const db = require('../../models');
 
 class Account {
@@ -38,6 +40,29 @@ class Account {
                 }
             } catch (err) {
                 reject(err);
+            }
+        });
+    }
+    changePassword(id: string, password: string) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                const pre = await db.users.findOne({ where: { id: id }, attributes: ['password'], raw: true });
+                if (pre.password) {
+                    const check = await bcrypt.compareSync(password, pre.password);
+                    console.log(check);
+
+                    if (!check) {
+                        const pass = await Security.hash(password);
+                        const user = await db.users.update({ password: pass }, { where: { id: id } });
+                        console.log(user[0]);
+                        if (user[0] === 1) resolve(1);
+                        resolve(0);
+                    }
+                    resolve(0);
+                }
+                resolve(0);
+            } catch (error) {
+                reject(error);
             }
         });
     }

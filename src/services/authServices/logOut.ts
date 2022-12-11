@@ -4,11 +4,14 @@ const db = require('../../models');
 
 class LogOut {
     logOut = (req: any, res: any) => {
-        console.log('check-here', req.signedCookies, req.body.params.id);
+        console.log('check-here', req.signedCookies, req.cookies.k_user);
         return new Promise(async (resolve, reject) => {
             try {
-                console.log(res.cookies);
-                if (req.signedCookies.sn && req.body.params.id) {
+                const refreshToken = req.signedCookies.sn;
+                const accessToken = req.cookies.tks;
+                const id = req.cookies.k_user;
+                console.log(req.cookies);
+                if (refreshToken && accessToken && id) {
                     token.deleteToken(res);
                     resolve({ status: 1, message: 'Logged out !' });
                 } else {

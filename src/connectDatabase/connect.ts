@@ -2,7 +2,7 @@ const { Sequelize } = require('sequelize');
 import mongoose from 'mongoose';
 require('dotenv').config();
 
-class Sever {
+class Serve {
     ConnectMySQL() {
         const sequelize = new Sequelize(
             process.env.DB_DATABASENAME || 'spaceship',
@@ -40,4 +40,4 @@ class Sever {
     };
 }
 
-export default new Sever();
+export default new Serve();

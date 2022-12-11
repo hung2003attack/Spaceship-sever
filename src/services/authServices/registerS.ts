@@ -26,10 +26,10 @@ class register {
                     return checkP;
                 });
                 if (checkPhoneNumberEmail.length >= 5) {
-                    resolve({ result: 'Create failed', check: 3 });
+                    resolve({ result: 'Create failed', check: 2 });
                     return;
                 } else if (checkPassword.includes(true) === true) {
-                    resolve({ result: 'Account is existed', check: 3 });
+                    resolve({ result: 'Account is existed', check: 2 });
                     return;
                 } else {
                     try {
