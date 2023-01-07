@@ -2,10 +2,12 @@ import jwt from 'jsonwebtoken';
 import token from '../services/tokensService/token';
 class JWTVERIFY {
     verifyToken = async (req: any, res: any, next: any) => {
-        const idUser = await req.cookies.k_user;
-        const refreshToken = await req.signedCookies.sn;
-        const authHeader = await req.cookies.tks;
-        console.log(idUser, refreshToken, authHeader, req.cookies.tks);
+        console.log(req.cookies);
+
+        const idUser = req.cookies.k_user;
+        const refreshToken = req.signedCookies.sn;
+        const authHeader = req.cookies.tks;
+        console.log(idUser, refreshToken, authHeader, req.cookies.tks, 'JWTVERIFY');
 
         if (authHeader && idUser && refreshToken) {
             const tokenc = authHeader && authHeader.split(' ')[1];

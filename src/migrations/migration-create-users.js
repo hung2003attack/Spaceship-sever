@@ -26,6 +26,11 @@ module.exports = {
             skill: { type: Sequelize.STRING(500) },
             occupation: { type: Sequelize.STRING(500) },
             experience: { type: Sequelize.STRING(500) },
+            lg: {
+                type: Sequelize.STRING(2),
+                defaultValue: 'VN',
+                allowNull: false
+            },
             createdAt: { type: Sequelize.DATE, default: false },
             updatedAt: { type: Sequelize.DATE },
         });

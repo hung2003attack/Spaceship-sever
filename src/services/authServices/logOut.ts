@@ -10,7 +10,7 @@ class LogOut {
                 const refreshToken = req.signedCookies.sn;
                 const accessToken = req.cookies.tks;
                 const id = req.cookies.k_user;
-                console.log(req.cookies);
+                console.log(req.cookies, '123456');
                 if (refreshToken && accessToken && id) {
                     token.deleteToken(res);
                     resolve({ status: 1, message: 'Logged out !' });

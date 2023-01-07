@@ -19,11 +19,11 @@ const port = process.env.PORT || 3001;
 //     level: 6,
 
 // }))
+app.use(cookieParser(process.env.SECRET));
 app.use(cors({ origin: 'http://localhost:3000', credentials: true }));
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
-app.use(cookieParser(process.env.SECRET));
 
 Serve.connect();
 

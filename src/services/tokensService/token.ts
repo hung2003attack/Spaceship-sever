@@ -4,7 +4,7 @@ require('dotenv').config();
 class Token {
     accessTokenF = (user: UserIT) => {
         return jwt.sign(user, '' + process.env.ACCESS_TOKEN_LOGIN + '', {
-            expiresIn: '20s',
+            expiresIn: '60s',
         });
     };
     refreshTokenF = (user: UserIT) => {

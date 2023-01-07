@@ -4,9 +4,11 @@ import token from './token';
 require('dotenv').config();
 class RefreshTokenCookie {
     refreshToken = async (req: any, res: any) => {
-        const refreshToken = await req.signedCookies.sn;
-        const idUser = await req.cookies.k_user;
-        const accessToken = await req.cookies.tks;
+        const refreshToken = req.signedCookies.sn;
+        const idUser = req.cookies.k_user;
+        const accessToken = req.cookies.tks;
+        console.log('refreshToken', idUser, refreshToken, accessToken);
+
         if (!refreshToken || !idUser || !accessToken) {
             token.deleteToken(res);
             return res.status(403).json("You're not Authenticated");

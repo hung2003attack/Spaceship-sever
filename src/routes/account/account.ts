@@ -1,9 +1,18 @@
 import express from 'express';
 import JWTVERIFY from '../../middleware/jwtAuth';
-
+import RefreshTokenCookie from '../../services/tokensService/refreshTokenCookie';
 import accountController from '../../controllers/accountController/accountController';
+import loginControllner from '../../controllers/loginControllner';
+import otpController from '../../controllers/auth/otpController';
+import registerController from '../../controllers/registerController';
+import logOutController from '../../controllers/logOutController';
+import jwtAuth from '../../middleware/jwtAuth';
 const router = express.Router();
+router.post('/register', registerController.register);
+router.post('/login', loginControllner.login);
+router.post('/logout', jwtAuth.verifyToken, logOutController.logOut);
 router.post('/get', accountController.get);
+router.post('/refresh', RefreshTokenCookie.refreshToken);
 router.post('/changePassword', accountController.changePassword);
 router.get('/delete', JWTVERIFY.verifyTokenDelete, accountController.delete);
 export default router;
