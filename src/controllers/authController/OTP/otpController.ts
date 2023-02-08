@@ -1,4 +1,4 @@
-import OTP from '../../services/authServices/OTP/otpService';
+import OTP from '../../../services/AuthServices/OTP/OTPService';
 class OTPController {
     sendOTP = async (req: any, res: any) => {
         try {

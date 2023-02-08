@@ -1,6 +1,6 @@
-import Token from './token';
+import Token from './Token';
 import jwt from 'jsonwebtoken';
-import token from './token';
+import token from './Token';
 require('dotenv').config();
 class RefreshTokenCookie {
     refreshToken = async (req: any, res: any) => {

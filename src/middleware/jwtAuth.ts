@@ -1,5 +1,5 @@
 import jwt from 'jsonwebtoken';
-import token from '../services/tokensService/token';
+import token from '../services/TokensService/Token';
 class JWTVERIFY {
     verifyToken = async (req: any, res: any, next: any) => {
         console.log(req.cookies);

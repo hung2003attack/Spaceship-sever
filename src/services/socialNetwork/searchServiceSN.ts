@@ -6,7 +6,7 @@ class SearchService {
             try {
                 const data = await db.users.findOne({
                     where: { id: id },
-                    attributes: { exclude: ['phoneNumberEmail', 'password'] },
+                    attributes: { exclude: ['phoneNumberEmail', 'password', 'lg', 'updatedAt'] },
                     raw: true,
                 });
                 if (data) {

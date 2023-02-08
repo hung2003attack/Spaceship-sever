@@ -1,7 +1,6 @@
-import searchServiceSN from '../../services/socialNetwork/searchServiceSN';
-import SearchService from '../../services/socialNetwork/searchServiceSN';
+import searchServiceSN from '../../services/SocialNetwork/SearchServiceSN';
 
-class SearchController {
+class searchController {
     getUser = async (req: any, res: any) => {
         try {
             const id = req.body.params.id;
@@ -14,4 +13,4 @@ class SearchController {
         }
     };
 }
-export default new SearchController();
+export default new searchController();

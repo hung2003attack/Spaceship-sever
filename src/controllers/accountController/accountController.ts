@@ -1,6 +1,6 @@
-import Account from '../../services/accountService/accountService';
+import Account from '../../services/AccountService/AccountService';
 
-class AccountController {
+class accountController {
     get = async (req: any, res: any) => {
         console.log(req.body);
 
@@ -31,4 +31,4 @@ class AccountController {
         }
     };
 }
-export default new AccountController();
+export default new accountController();

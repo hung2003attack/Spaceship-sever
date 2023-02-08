@@ -1,10 +1,10 @@
 import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
 import { Prohibit, VerifyMail } from '../../../models/verify/sendOTPMail';
-import Security from '../checkSecurity';
+import Security from '../Security';
 import bcrypt from 'bcryptjs';
 
-class OTP {
+class OTPService {
     sendOTP = async (phoneMail: string) => {
         return new Promise(async (resolve, reject) => {
             const otp = Math.floor(Math.random() * (999999 - 100000) + 100000);
@@ -96,4 +96,4 @@ class OTP {
         });
     }
 }
-export default new OTP();
+export default new OTPService();

@@ -1,4 +1,4 @@
-import Security from '../authServices/checkSecurity';
+import Security from '../AuthServices/Security';
 import bcrypt from 'bcryptjs';
 const db = require('../../models');
 

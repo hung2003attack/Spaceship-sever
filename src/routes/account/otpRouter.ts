@@ -1,5 +1,5 @@
 import express from 'express';
-import otpController from '../../controllers/auth/otpController';
+import otpController from '../../controllers/authController/OTP/otpController';
 const router = express.Router();
 
 router.post('/send', otpController.sendOTP);
