@@ -15,66 +15,97 @@ class OTPService {
             const OAUTH2Client = new google.auth.OAuth2(CLIENT_ID, CLIENT_SECRET, REDIRECT_URL);
 
             OAUTH2Client.setCredentials({ refresh_token: REFRESH_TOKEN });
-            try {
-                const otpHash = await Security.hash(String(otp));
-                const data: any = await Prohibit.findOne({ email: phoneMail }).select('sended');
-                if (data?.sended <= 4 || !data) {
-                    const dbSend = await VerifyMail.create({
-                        email: phoneMail,
-                        otp: otpHash,
-                    });
-                    if (data?.sended > 0 === true) {
-                        await Prohibit.updateOne({
-                            sended: data.sended + 1,
+
+            // Download the helper library from https://www.twilio.com/docs/node/install
+            // Set environment variables for your credentials
+            // Read more at http://twil.io/secure
+            const client = require('twilio')(process.env.ACCOUNTSID, process.env.TWILIO_AUTH_TOKEN);
+            if (isNaN(Number(phoneMail))) {
+                try {
+                    const otpHash = await Security.hash(String(otp));
+                    const data: any = await Prohibit.findOne({ email: phoneMail }).select('sended');
+                    if (data?.sended <= 4 || !data) {
+                        const dbSend = await VerifyMail.create({
+                            email: phoneMail,
+                            otp: otpHash,
                         });
-                    } else {
-                        await Prohibit.create({
-                            email: dbSend.email,
-                            sended: 1,
+                        if (data?.sended > 0 === true) {
+                            await Prohibit.updateOne({
+                                sended: data.sended + 1,
+                            });
+                        } else {
+                            await Prohibit.create({
+                                email: dbSend.email,
+                                sended: 1,
+                            });
+                        }
+                        const accessToken = await OAUTH2Client.getAccessToken();
+                        const transporter = nodemailer.createTransport({
+                            service: 'gmail',
+                            auth: {
+                                type: 'OAuth2',
+                                user: 'hungsendemail@gmail.com',
+                                clientId: String(CLIENT_ID),
+                                clientSecret: String(CLIENT_SECRET),
+                                refreshToken: String(REFRESH_TOKEN),
+                                accessToken: String(accessToken),
+                            },
                         });
-                    }
-                    const accessToken = await OAUTH2Client.getAccessToken();
-                    const transporter = nodemailer.createTransport({
-                        service: 'gmail',
-                        auth: {
-                            type: 'OAuth2',
-                            user: 'hungsendemail@gmail.com',
-                            clientId: String(CLIENT_ID),
-                            clientSecret: String(CLIENT_SECRET),
-                            refreshToken: String(REFRESH_TOKEN),
-                            accessToken: String(accessToken),
-                        },
-                    });
-                    const html = `<div style=" width: '100%', text-align: 'center' ">
+                        const html = `<div style=" width: '100%', text-align: 'center' ">
                                                 <p>Which is OTP Code to Verify Your Email. Please Enter your code to verify</p>
                                                 <h3 style="padding: '50px', background-color: '#cdcbc8' ">${otp}</h3>
                                             </div>`;
 
-                    await transporter.sendMail(
-                        {
-                            from: 'hungsendemail@gmail.com',
-                            to: phoneMail,
-                            subject: 'Verify Email',
-                            html: html,
-                        },
-                        (err, info) => {
-                            if (err) {
-                                reject(err);
-                            } else {
-                                console.log(err, info);
-                                resolve({ status: 1, message: 'Sended Successful!' });
-                            }
-                        },
-                    );
+                        await transporter.sendMail(
+                            {
+                                from: 'hungsendemail@gmail.com',
+                                to: phoneMail,
+                                subject: 'Verify Email',
+                                html: html,
+                            },
+                            (err, info) => {
+                                if (err) {
+                                    reject(err);
+                                } else {
+                                    console.log(err, info);
+                                    resolve({ status: 1, message: 'Sended Successful!' });
+                                }
+                            },
+                        );
+                    }
+                    if (data?.sended > 4) {
+                        resolve({
+                            status: 0,
+                            message: 'You sended too 5 OTP, please wait until after the next 1 month. Thank you!',
+                        });
+                    }
+                } catch (error) {
+                    reject(error);
                 }
-                if (data?.sended > 4) {
-                    resolve({
-                        status: 0,
-                        message: 'You sended too 5 OTP, please wait until after the next 1 month. Thank you!',
-                    });
-                }
-            } catch (error) {
-                reject(error);
+                console.log('no!');
+            } else {
+                console.log(phoneMail);
+
+                client.messages
+                    .create({ body: 'Hi there', from: '+84974034981', to: `+84${Number(phoneMail)}` })
+                    .then((message: { sid: any }) => console.log(message.sid));
+
+                // .then(() => {
+                //     const readline = require('readline').createInterface({
+                //         input: process.stdin,
+                //         output: process.stdout,
+                //     });
+                //     readline.question('Please enter the OTP:', (otpCode: any) => {
+                //         client.verify.v2
+                //             .services(verifySid)
+                //             .verificationChecks.create({ to: '+84974034981', code: otpCode })
+                //             .then((verification_check: { status: any }) =>
+                //                 console.log('2', verification_check.status),
+                //             )
+                //             .then(() => readline.close());
+                //     });
+                // });
+                console.log('yes, absolutely');
             }
         });
     };
