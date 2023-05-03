@@ -3,6 +3,7 @@ import nodemailer from 'nodemailer';
 import { Prohibit, VerifyMail } from '../../../models/verify/sendOTPMail';
 import Security from '../Security';
 import bcrypt from 'bcryptjs';
+import moment from 'moment';
 
 class OTPService {
     sendOTP = async (phoneMail: string) => {
@@ -23,15 +24,22 @@ class OTPService {
             if (isNaN(Number(phoneMail))) {
                 try {
                     const otpHash = await Security.hash(String(otp));
-                    const data: any = await Prohibit.findOne({ email: phoneMail }).select('sended');
-                    if (data?.sended <= 4 || !data) {
+                    const data: any = await Prohibit.findOne({ email: phoneMail });
+                    const date = new Date(data?.createdAt);
+                    const currentDate = new Date();
+                    const a = [date.getFullYear(), date.getMonth() + 1, date.getDate()];
+                    const b = [currentDate.getFullYear(), currentDate.getMonth() + 1, currentDate.getDate()];
+                    const oldDate = moment(a);
+                    const curDate = moment(b);
+                    const checkDate: boolean = curDate.diff(oldDate) > 2592000000;
+                    if (data?.sended <= 4 || !data || checkDate) {
                         const dbSend = await VerifyMail.create({
                             email: phoneMail,
                             otp: otpHash,
                         });
-                        if (data?.sended > 0 === true) {
-                            await Prohibit.updateOne({
-                                sended: data.sended + 1,
+                        if (data?.sended > 0) {
+                            await Prohibit.findOne({ email: data.email }).updateOne({
+                                $inc: { sended: +1 },
                             });
                         } else {
                             await Prohibit.create({
@@ -72,8 +80,7 @@ class OTPService {
                                 }
                             },
                         );
-                    }
-                    if (data?.sended > 4) {
+                    } else if (data?.sended > 4 && !checkDate) {
                         resolve({
                             status: 0,
                             message: 'You sended too 5 OTP, please wait until after the next 1 month. Thank you!',
@@ -113,10 +120,31 @@ class OTPService {
         return new Promise(async (resolve, reject) => {
             try {
                 const data = await VerifyMail.find({ email: phoneMail }).exec();
-
                 if (data.length > 0) {
+                    const d: any = data[data.length - 1].createdAt;
+                    const date = new Date(d);
+                    const currentDate = new Date();
+                    const a = [
+                        date.getFullYear(),
+                        date.getMonth() + 1,
+                        date.getDate(),
+                        date.getHours(),
+                        date.getMinutes(),
+                        date.getSeconds(),
+                    ];
+                    const b = [
+                        currentDate.getFullYear(),
+                        currentDate.getMonth() + 1,
+                        currentDate.getDate(),
+                        currentDate.getHours(),
+                        currentDate.getMinutes(),
+                        currentDate.getSeconds(),
+                    ];
+                    const oldDate = moment(a);
+                    const curDate = moment(b);
+                    const checkDate: boolean = curDate.diff(oldDate) < 65000;
                     const checkOTP = await bcrypt.compareSync(otp, data[data.length - 1].otp);
-                    if (checkOTP) resolve({ status: 1, message: 'ok' });
+                    if (checkOTP && checkDate) resolve({ status: 1, message: 'ok' });
                     resolve({ status: 0, message: 'Wrong OTP!' });
                 } else {
                     resolve({ status: 0, message: 'Expired Code!' });

@@ -12,6 +12,11 @@ class Serve {
                 host: process.env.DB_HOST || 'localhost',
                 port: process.env.DB_PORT || 3307,
                 dialect: 'mysql',
+                pool: {
+                    max: 5,
+                    min: 0,
+                    idle: 10000,
+                },
             },
         );
         const connectDB = async () => {
@@ -24,6 +29,7 @@ class Serve {
         };
         connectDB();
     }
+
     ConnectMongoDB = async () => {
         try {
             await mongoose.connect(

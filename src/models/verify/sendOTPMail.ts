@@ -17,6 +17,7 @@ const prohibited = new Schema(
     {
         email: { type: String, required: true, primaryKey: true },
         sended: { type: Number, required: true },
+        ip: { type: String, required: true },
         createdAt: { type: Date, index: { expires: 2629743 } },
     },
     {
