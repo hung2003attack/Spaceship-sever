@@ -1,7 +1,11 @@
-import userService from '../../services/SocialNetwork/Home';
+import HomeSN from '../../services/SocialNetwork/Home';
 class homeController {
+    setPost = async (req: any, res: any) => {
+        console.log(req.body, 'setPost');
+        const data = await HomeSN.setPost;
+    };
     search = () => {};
-    getHome = async (req: any, res: any, next: any) => {
+    getPost = async (req: any, res: any, next: any) => {
         try {
             console.log('home');
 
