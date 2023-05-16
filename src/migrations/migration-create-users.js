@@ -1,4 +1,5 @@
 'use strict';
+
 module.exports = {
     async up(queryInterface, Sequelize) {
         await queryInterface.createTable('users', {
@@ -7,17 +8,21 @@ module.exports = {
                 allowNull: false,
                 type: Sequelize.STRING,
             },
+            phoneNumberEmail: { type: Sequelize.STRING, allowNull: false },
+            password: { type: Sequelize.STRING, allowNull: false },
             fullName: {
                 allowNull: false,
                 type: Sequelize.STRING(30),
             },
+            avatar: {
+                type: Sequelize.BLOB('long'),
+                allowNull: true,
+            },
             status: { type: Sequelize.STRING(50) },
             nickName: { type: Sequelize.STRING(30) },
-            phoneNumberEmail: { type: Sequelize.STRING, allowNull: false },
-            password: { type: Sequelize.STRING, allowNull: false },
             gender: { type: Sequelize.INTEGER(1) },
             birthday: { type: Sequelize.STRING(13), allowNull: false },
-            avatar: { type: Sequelize.TEXT, },
+
             background: { type: Sequelize.TEXT },
             admin: { type: Sequelize.BOOLEAN, default: true },
             hobby: { type: Sequelize.STRING(500) },
@@ -26,12 +31,23 @@ module.exports = {
             skill: { type: Sequelize.STRING(500) },
             occupation: { type: Sequelize.STRING(500) },
             experience: { type: Sequelize.STRING(500) },
-            lg: {
-                type: Sequelize.STRING(2),
-                defaultValue: 'VN',
+            sn:
+            {
+                type: Sequelize.STRING(3),
+                defaultValue: "VN",
+                allowNull: false
+            }, l:
+            {
+                type: Sequelize.STRING(3),
+                defaultValue: "VN",
                 allowNull: false
             },
-            createdAt: { type: Sequelize.DATE, default: false },
+            w: {
+                type: Sequelize.STRING(3),
+                defaultValue: "VN",
+                allowNull: false
+            },
+            createdAt: { type: Sequelize.DATE, },
             updatedAt: { type: Sequelize.DATE },
         });
     },

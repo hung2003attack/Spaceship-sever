@@ -1,5 +1,5 @@
 import express from 'express';
-import searchControllerSN from '../../controllers/socialNetwork/searchControllerSN';
+import searchControllerSN from '../../../controllers/websController/socialNetwork/searchControllerSN';
 
 const router = express.Router();
 console.log('here');

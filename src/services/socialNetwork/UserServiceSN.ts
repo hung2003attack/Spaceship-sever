@@ -34,7 +34,6 @@ class UserService {
                         raw: true,
                     });
                     console.log(data, 'get Params');
-
                     if (data) resolve({ status: 1, data });
                     resolve({ status: 0 });
                 } catch (error) {

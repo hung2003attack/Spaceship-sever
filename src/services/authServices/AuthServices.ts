@@ -19,27 +19,29 @@ class AuthServices {
                 const isExist: any = await UserSecurity.checkUserEmail(phoneNumberEmail);
                 const { status, user } = isExist;
                 console.log('isExist', isExist);
-                if (status && user) {
-                    const checkP = bcrypt.compareSync(password, user.password);
-                    if (checkP) {
-                        delete user.password;
-                        delete user.phoneNumberEmail;
-                        userData.errCode = 1;
-                        const accessToken = await Token.accessTokenF(user);
-                        const refreshToken = await Token.refreshTokenF(user);
-                        Object.freeze(user);
-                        res.cookie('sn', refreshToken, {
-                            signed: true,
-                            httpOnly: true,
-                            secure: false,
-                            path: '/',
-                            sameSite: 'strict',
-                            expires: new Date(new Date().getTime() + 365 * 86409000),
-                        });
-                        userData.data = { ...user, accessToken };
-                    } else {
-                        userData.errCode = 0;
-                    }
+                if (status && user.length > 0) {
+                    user.map(async (u: any) => {
+                        const checkP = bcrypt.compareSync(password, u.password);
+                        if (checkP) {
+                            delete user.password;
+                            delete user.phoneNumberEmail;
+                            userData.errCode = 1;
+                            const accessToken = await Token.accessTokenF(u);
+                            const refreshToken = await Token.refreshTokenF(u);
+                            Object.freeze(u);
+                            res.cookie('sn', refreshToken, {
+                                signed: true,
+                                httpOnly: true,
+                                secure: false,
+                                path: '/',
+                                sameSite: 'strict',
+                                expires: new Date(new Date().getTime() + 365 * 86409000),
+                            });
+                            userData.data = { ...u, accessToken };
+                        } else {
+                            userData.errCode = 0;
+                        }
+                    });
                 } else {
                     userData.errCode = 0;
                 }
@@ -89,8 +91,7 @@ class AuthServices {
                     return;
                 } else {
                     try {
-                        const time = moment().get('hour') + ':' + moment().get('minute') + ':' + moment().get('second');
-                        const date = moment().format('YYYY-MM-DD') + ' ' + time;
+                        const date = moment().format('YYYY-MM-DD HH:mm:ss');
                         console.log(date, 'date');
                         const password = await Security.hash(data.password);
                         const res = await db.users.create({
@@ -99,7 +100,7 @@ class AuthServices {
                             password: password,
                             phoneNumberEmail: data.phoneMail,
                             gender: data.gender,
-                            birthDate: data.date,
+                            birthday: data.date,
                             admin: false,
                             createdAt: date,
                         });

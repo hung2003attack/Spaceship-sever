@@ -1,6 +1,6 @@
 import express from 'express';
-import JWTVERIFY from '../../middleware/jwtAuth';
-import homeController from '../../controllers/socialNetwork/homeController';
+import JWTVERIFY from '../../../middleware/jwtAuth';
+import homeController from '../../../controllers/websController/socialNetwork/homeController';
 
 const router = express.Router();
 router.get('/', homeController.getPost);

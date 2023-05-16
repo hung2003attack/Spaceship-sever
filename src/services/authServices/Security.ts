@@ -6,7 +6,7 @@ class Security {
     checkUserEmail(email: string) {
         return new Promise(async (resolve, reject) => {
             try {
-                const user = await db.users.findOne({
+                const user = await db.users.findAll({
                     where: { phoneNumberEmail: email },
                     attributes: ['id', 'phoneNumberEmail', 'password', 'avatar', 'fullName', 'gender'],
                     raw: true,

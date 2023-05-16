@@ -7,8 +7,6 @@ class RefreshTokenCookie {
         const refreshToken = req.signedCookies.sn;
         const idUser = req.cookies.k_user;
         const accessToken = req.cookies.tks;
-        console.log('refreshToken', idUser, refreshToken, accessToken);
-
         if (!refreshToken || !idUser || !accessToken) {
             token.deleteToken(res);
             return res.status(403).json("You're not Authenticated");

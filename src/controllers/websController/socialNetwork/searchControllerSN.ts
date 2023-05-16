@@ -1,4 +1,4 @@
-import searchServiceSN from '../../services/SocialNetwork/SearchServiceSN';
+import searchServiceSN from '../../../services/SocialNetwork/SearchServiceSN';
 
 class searchController {
     getUser = async (req: any, res: any) => {

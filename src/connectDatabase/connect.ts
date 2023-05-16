@@ -2,12 +2,12 @@ const { Sequelize } = require('sequelize');
 import mongoose from 'mongoose';
 require('dotenv').config();
 
-class Serve {
+class Server {
     ConnectMySQL() {
         const sequelize = new Sequelize(
             process.env.DB_DATABASENAME || 'spaceship',
-            process.env.DB_USER || 'root',
-            process.env.DB_PASSWORD || 'hung01645615023',
+            process.env.DB_USER,
+            process.env.DB_PASSWORD,
             {
                 host: process.env.DB_HOST || 'localhost',
                 port: process.env.DB_PORT || 3307,
@@ -46,4 +46,4 @@ class Serve {
     };
 }
 
-export default new Serve();
+export default new Server();

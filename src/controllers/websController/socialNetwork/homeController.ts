@@ -1,4 +1,4 @@
-import HomeSN from '../../services/SocialNetwork/Home';
+import HomeSN from '../../../services/SocialNetwork/Home';
 class homeController {
     setPost = async (req: any, res: any) => {
         console.log(req.body, 'setPost');
