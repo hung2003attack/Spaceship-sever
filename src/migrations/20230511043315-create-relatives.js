@@ -16,12 +16,16 @@ module.exports = {
       },
       id_relative: {
         type: Sequelize.STRING(50),
-        unique: true,
         allowNull: false,
       },
       title: {
         type: Sequelize.STRING(20),
         allowNull: false,
+      },
+      really: {
+        type: Sequelize.INTEGER(1),
+        defaultValue: 0,
+        allowNull: false
       },
       createdAt: {
         allowNull: false,
@@ -33,6 +37,8 @@ module.exports = {
     })
       .then(() => {
         const sql = `ALTER TABLE relatives ADD CONSTRAINT FRK_relatives_users FOREIGN KEY (id_user) REFERENCES users(id)`;
+        const sql2 = `ALTER TABLE relatives ADD CONSTRAINT FRK_relatives_re FOREIGN KEY (id_relative) REFERENCES users(id)`;
+        queryInterface.sequelize.query(sql2, { raw: true })
         return queryInterface.sequelize.query(sql, { raw: true });
       })
   },

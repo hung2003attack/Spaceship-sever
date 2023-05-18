@@ -10,6 +10,10 @@ module.exports = (sequelize: any, DataTypes: { STRING: any; DATE: any }) => {
          */
         static associate(models: any) {
             // define association here
+            // friends.hasOne(models.users, { foreignKey: 'id', as: 'friends' });
+            // friends.hasOne(models.users, { foreignKey: 'id'  ,as: 'users'});
+            friends.belongsTo(models.users, { foreignKey: 'idCurrentUser', targetKey: 'id' });
+            friends.belongsTo(models.users, { foreignKey: 'idFriend', targetKey: 'id' });
         }
     }
     friends.init(

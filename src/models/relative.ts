@@ -1,7 +1,7 @@
 'use strict';
 import { Model } from 'sequelize';
 module.exports = (sequelize: any, DataTypes: { INTEGER: any; STRING: any }) => {
-    class relative extends Model {
+    class relatives extends Model {
         /**
          * Helper method for defining associations.
          * This method is not a part of Sequelize lifecycle.
@@ -11,16 +11,17 @@ module.exports = (sequelize: any, DataTypes: { INTEGER: any; STRING: any }) => {
             // define association here
         }
     }
-    relative.init(
+    relatives.init(
         {
             id_user: DataTypes.STRING,
             id_relative: DataTypes.STRING,
             title: DataTypes.STRING,
+            really: DataTypes.INTEGER,
         },
         {
             sequelize,
-            modelName: 'relative',
+            modelName: 'relatives',
         },
     );
-    return relative;
+    return relatives;
 };

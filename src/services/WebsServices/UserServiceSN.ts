@@ -63,10 +63,22 @@ class UserService {
             },
         );
     }
-    update = (id: string, lg: string) => {
+    setLg = (id: string, lg: string) => {
         return new Promise(async (resolve: (arg0: any) => void, reject: (arg0: unknown) => void) => {
             try {
                 const data = await db.users.update({ sn: lg }, { where: { id: id } });
+                resolve(data[0]);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    };
+    setAs = (ass: number, id: string) => {
+        return new Promise(async (resolve: (arg0: any) => void, reject: (arg0: unknown) => void) => {
+            try {
+                const data = await db.users.update({ as: ass }, { where: { id: id }, raw: true });
+                console.log('As ', data[0]);
+
                 resolve(data[0]);
             } catch (error) {
                 reject(error);

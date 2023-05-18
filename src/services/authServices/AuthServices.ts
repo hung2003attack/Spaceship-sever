@@ -83,11 +83,11 @@ class AuthServices {
                     const checkP = bcrypt.compareSync(data.password, User.password);
                     return checkP;
                 });
-                if (checkPhoneNumberEmail.length >= 5) {
-                    resolve({ result: 'Create failed', check: 2 });
+                if (checkPhoneNumberEmail.length >= 2) {
+                    resolve({ result: 'Create failed', check: 2, acc: checkPhoneNumberEmail.length });
                     return;
                 } else if (checkPassword.includes(true) === true) {
-                    resolve({ result: 'Account is existed', check: 2 });
+                    resolve({ result: 'Account is existed', check: 2, acc: checkPhoneNumberEmail.length });
                     return;
                 } else {
                     try {
@@ -104,8 +104,13 @@ class AuthServices {
                             admin: false,
                             createdAt: date,
                         });
-                        if (res.dataValues.id) resolve({ result: 'ok, Created Successful', check: 1 });
-                        resolve({ result: 'ok, Created Failed', check: 0 });
+                        if (res.dataValues.id)
+                            resolve({
+                                result: 'ok, Created Successful',
+                                check: 1,
+                                acc: checkPhoneNumberEmail.length,
+                            });
+                        resolve({ result: 'ok, Created Failed', check: 0, acc: checkPhoneNumberEmail.length });
                     } catch (err) {
                         reject(err);
                     }

@@ -1,10 +1,11 @@
 import { redisClient } from '../..';
-import UserServiceSN from '../../services/SocialNetwork/UserServiceSN';
+import UserServiceSN from '../../services/WebsServices/UserServiceSN';
 class userController {
     getById = async (req: any, res: any) => {
         try {
             const id: string = req.body.id;
             const key = id + 'getById';
+
             redisClient.get(key, async (err: any, data: string) => {
                 if (err) console.log('get user failed', err);
 
@@ -35,11 +36,26 @@ class userController {
             console.log(error);
         }
     };
-    update = async (req: any, res: any) => {
+    setLg = async (req: any, res: any) => {
         try {
             const id: string = req.body.id;
             const lg: string = req.body.lg;
-            const data: any = await UserServiceSN.update(id, lg);
+            const data: any = await UserServiceSN.setLg(id, lg);
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    setAs = async (req: any, res: any) => {
+        try {
+            const ass: number = req.body.as;
+            const id = req.cookies.k_user;
+            console.log(ass, id, 'heeeee');
+            const key = id + 'getById';
+            const data: any = await UserServiceSN.setAs(ass, id);
+            redisClient.set(key, JSON.stringify(''), (err: any, data: string) => {
+                if (err) console.log('Set Value faild!', err);
+            });
             return res.status(200).json(data);
         } catch (error) {
             console.log(error);

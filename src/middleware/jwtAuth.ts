@@ -29,6 +29,7 @@ class JWTVERIFY {
                 }
             }
         } else {
+            token.deleteToken(res);
             return res.status(401).json({ status: 0, message: "You're not11 authenticated!" });
         }
     };

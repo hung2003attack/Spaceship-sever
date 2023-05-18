@@ -5,6 +5,7 @@ import Security from '../Security';
 import bcrypt from 'bcryptjs';
 import moment from 'moment';
 
+const db = require('../../../models');
 class OTPService {
     sendOTP = async (phoneMail: string) => {
         return new Promise(async (resolve, reject) => {
@@ -120,6 +121,11 @@ class OTPService {
         return new Promise(async (resolve, reject) => {
             try {
                 const data = await VerifyMail.find({ email: phoneMail }).exec();
+                const users = await db.users.findAll({
+                    where: { phoneNumberEmail: phoneMail },
+                    attributes: ['id'],
+                    raw: true,
+                });
                 if (data.length > 0) {
                     const d: any = data[data.length - 1].createdAt;
                     const date = new Date(d);
@@ -144,8 +150,13 @@ class OTPService {
                     const curDate = moment(b);
                     const checkDate: boolean = curDate.diff(oldDate) < 65000;
                     const checkOTP = await bcrypt.compareSync(otp, data[data.length - 1].otp);
-                    if (checkOTP && checkDate) resolve({ status: 1, message: 'ok' });
-                    resolve({ status: 0, message: 'Wrong OTP!' });
+                    if (checkOTP && checkDate) console.log(checkDate, checkOTP, curDate.diff(oldDate));
+                    if (checkDate) {
+                        if (checkOTP) resolve({ status: 1, message: 'ok', acc: users.length });
+                        resolve({ status: 0, message: 'Wrong OTP!' });
+                    } else {
+                        resolve({ status: 0, message: 'Expired Code!' });
+                    }
                 } else {
                     resolve({ status: 0, message: 'Expired Code!' });
                 }

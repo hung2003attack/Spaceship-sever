@@ -17,6 +17,8 @@ module.exports = (
          */
         static associate(models: any) {
             // define association here
+            user.hasOne(models.friends, { foreignKey: 'idCurrentUser', as: 'id_user' });
+            user.hasOne(models.friends, { foreignKey: 'idFriend', as: 'id_friend' });
         }
     }
     user.init(
@@ -41,6 +43,7 @@ module.exports = (
             sn: DataTypes.STRING,
             l: DataTypes.STRING,
             w: DataTypes.STRING,
+            as: DataTypes.STRING,
         },
         {
             sequelize,

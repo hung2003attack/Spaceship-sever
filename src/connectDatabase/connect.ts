@@ -29,6 +29,9 @@ class Server {
         };
         connectDB();
     }
+    socket = (io: any) => {
+        const online = new Set();
+    };
 
     ConnectMongoDB = async () => {
         try {
