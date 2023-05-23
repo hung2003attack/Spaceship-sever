@@ -10,7 +10,7 @@ class PeopleService {
     getPeopleAll(id: string) {
         return new Promise(async (resolve, reject) => {
             try {
-                const friends = await db.friends
+                const friends_id = await db.friends
                     .findAll({
                         where: {
                             [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
@@ -21,32 +21,21 @@ class PeopleService {
                     .then((fr: { idFriend: string; idCurrentUser: string }[]) =>
                         fr.map((f) => (f.idFriend !== id ? f.idFriend : f.idCurrentUser !== id ? f.idCurrentUser : '')),
                     );
-                console.log(friends, 'friends');
-
-                const relatives = await db.relatives
+                const relatives_id = await db.relatives
                     .findAll({
                         where: {
                             [Op.or]: [{ id_user: id }, { id_relative: id }],
                         },
-                        attributes: ['id_user', 'id_relative', 'title', 'really'],
+                        attributes: ['id_user', 'id_relative', 'createdAt'],
                         raw: true,
                     })
-                    .then((rel: { id_user: string; id_relative: string }[]) => {
-                        return {
-                            id: rel.map((r) =>
-                                r.id_user !== id ? r.id_user : r.id_relative !== id ? r.id_relative : '',
-                            ),
-                            full: rel.map((r) => (r.id_user !== id ? r : r.id_relative !== id ? r : '')),
-                        };
-                    });
-                console.log('relative', relatives);
-
-                const all = friends.concat(relatives.id);
+                    .then((rel: { id_user: string; id_relative: string }[]) =>
+                        rel.map((r) => (r.id_user !== id ? r.id_user : r.id_relative !== id ? r.id_relative : '')),
+                    );
                 const attributes = ['id', 'fullName', 'nickName', 'gender', 'birthday'];
-                console.log(friends, '--', relatives.id, ' == ', all);
 
-                const dataUsers = await db.users.findAll({
-                    where: { id: { [Op.in]: friends } },
+                const data_f_Users = await db.users.findAll({
+                    where: { id: { [Op.in]: friends_id } },
                     attributes: attributes,
                     include: [
                         {
@@ -55,7 +44,7 @@ class PeopleService {
                                 [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
                             },
                             as: 'id_user',
-                            attributes: ['idCurrentUser', 'idFriend', 'level'],
+                            attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
                             required: true,
                         },
                     ],
@@ -63,7 +52,7 @@ class PeopleService {
                     nest: true,
                 });
                 const dataFriends = await db.users.findAll({
-                    where: { id: { [Op.in]: friends } },
+                    where: { id: { [Op.in]: friends_id } },
                     attributes: attributes,
                     include: [
                         {
@@ -72,27 +61,63 @@ class PeopleService {
                                 [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
                             },
                             as: 'id_friend',
-                            attributes: ['idCurrentUser', 'idFriend', 'level'],
+                            attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
                             required: true,
                         },
                     ],
                     raw: true,
                     nest: true,
                 });
-                const dataAll = dataUsers.concat(dataFriends);
-                console.log(dataAll, 'dataFriends ', friends);
-
-                all.push(id);
-                for (let i = 0; i < 2; i++) {}
-                const dataStrangers = await db.users.findAll({
-                    where: { id: { [Op.notIn]: all } },
+                const data_r_user = await db.users.findAll({
+                    where: { id: { [Op.in]: relatives_id } },
                     attributes: attributes,
-
+                    include: [
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [{ id_user: id }, { id_relative: id }],
+                            },
+                            as: 'id_r_user',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: true,
+                        },
+                    ],
                     raw: true,
+                    nest: true,
                 });
 
-                // console.log({ tranger: dataStrangers, friends: dataFriends });
-                // resolve({ tranger: dataStrangers, friends: dataFriends });
+                const data_relatives = await db.users.findAll({
+                    where: { id: { [Op.in]: relatives_id } },
+                    attributes: attributes,
+                    include: [
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [{ id_user: id }, { id_relative: id }],
+                            },
+                            as: 'id_relative',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: true,
+                        },
+                    ],
+                    raw: true,
+                    nest: true,
+                });
+                const dataAllRelatives = data_r_user.concat(data_relatives);
+                const all_id = friends_id.concat(relatives_id);
+                const dataAllFriends = data_f_Users.concat(dataFriends);
+
+                all_id.push(id);
+                const dataStrangers = await db.users.findAll({
+                    where: { id: { [Op.notIn]: all_id } },
+                    order: db.sequelize.random(),
+                    limit: 20,
+                    attributes: attributes,
+                    raw: true,
+                });
+                console.log(dataAllFriends);
+
+                resolve({ trangers: dataStrangers, friends: dataAllFriends, family: dataAllRelatives });
             } catch (error) {
                 reject(error);
             }
@@ -106,9 +131,15 @@ class PeopleService {
                 console.log(date, 'date');
 
                 const id_mess = primaryKey();
+
                 if (id_mess) {
                     const data = await db.friends.findOrCreate({
-                        where: { idCurrentUser: id, idFriend: id_friend },
+                        where: {
+                            [Op.or]: [
+                                { idCurrentUser: id, idFriend: id_friend },
+                                { idCurrentUser: id_friend, idFriend: id },
+                            ],
+                        },
                         defaults: {
                             idCurrentUser: id,
                             idFriend: id_friend,
@@ -116,22 +147,29 @@ class PeopleService {
                             createdAt: date,
                         },
                     });
-                    if (data.dataValues.idCurrentUser && data.dataValues.idFriend && data.dataValues.id_message) {
+                    const id_user = data[0].dataValues.idCurrentUser;
+                    const id_fr = data[0].dataValues.idFriend;
+                    const id_message = data[0].dataValues.id_message;
+
+                    console.log(data, id_user, id_fr, id_message);
+                    if (data[0]._options.isNewRecord && id_user && id_fr && id_message) {
                         const user = await db.users.findOne({
-                            where: { id: data.dataValues.idCurrentUser },
+                            where: { id: id_user },
                             attributes: ['avatar', 'fullName', 'nickName', 'gender'],
                             raw: true,
                         });
                         const mes = await db.messages.create(
                             {
-                                id_message: data.dataValues.id_message,
+                                id_message: id_message,
                                 status: 1,
                                 title: title,
                                 createdAt: date,
                             },
                             { raw: true },
                         );
-                        resolve({ id_friend: data.dataValues.idFriend, mes, user });
+                        resolve({ id_friend: id_fr, mes, user });
+                    } else {
+                        console.log('Was friend');
                     }
                 }
             } catch (error) {

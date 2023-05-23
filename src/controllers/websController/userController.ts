@@ -5,6 +5,15 @@ class userController {
         try {
             const id: string = req.body.id;
             const key = id + 'getById';
+            const key_private = id + 'private';
+            redisClient.lrange(key_private, 0, -1, (err: any, items: string[]) => {
+                if (err) console.log(err);
+                if (!items.includes(key))
+                    redisClient.rpush(key_private, key, (err: any, length: number) => {
+                        if (err) console.log(err);
+                        console.log(`Item added to the list. New length: ${length}`);
+                    });
+            });
 
             redisClient.get(key, async (err: any, data: string) => {
                 if (err) console.log('get user failed', err);
@@ -53,7 +62,7 @@ class userController {
             console.log(ass, id, 'heeeee');
             const key = id + 'getById';
             const data: any = await UserServiceSN.setAs(ass, id);
-            redisClient.set(key, JSON.stringify(''), (err: any, data: string) => {
+            redisClient.del(key, (err: any, data: string) => {
                 if (err) console.log('Set Value faild!', err);
             });
             return res.status(200).json(data);

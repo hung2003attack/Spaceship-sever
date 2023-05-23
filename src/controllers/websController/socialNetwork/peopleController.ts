@@ -6,6 +6,8 @@ class peopleController {
         try {
             const id = req.cookies.k_user;
             const key: string = id + 'people';
+            const key_private = id + 'private';
+
             redisClient.get(key, async (err: any, data: string) => {
                 console.log(JSON.stringify(data), 'ere');
                 if (err) console.log('get value faild!', err);
@@ -17,6 +19,15 @@ class peopleController {
                     const datas = await peopleServiceSN.getPeopleAll(id);
                     console.log('yess,da', datas);
                     redisClient.set(key, JSON.stringify(datas));
+                    redisClient.lrange(key_private, 0, -1, (err: any, items: string[]) => {
+                        if (err) console.log(err);
+                        if (!items.includes(key))
+                            redisClient.rpush(key_private, key, (err: any, length: number) => {
+                                if (err) console.log(err);
+                                console.log(`Item added to the list. New length: ${length}`);
+                            });
+                    });
+
                     return res.status(200).json(datas);
                 }
             });
@@ -29,8 +40,13 @@ class peopleController {
             const id: string = req.cookies.k_user;
             const title: string = req.body.params.title;
             const id_friend = req.body.params.id_friend;
-            const key = id + 'people';
-            redisClient.set(key, JSON.stringify(''), (err: any, data: string) => {
+            const key_user = id + 'people';
+            const key_friend = id_friend + 'people';
+
+            redisClient.del(key_user, (err: any, data: string) => {
+                if (err) console.log('Set Value faild!', err);
+            });
+            redisClient.del(key_friend, (err: any, data: string) => {
                 if (err) console.log('Set Value faild!', err);
             });
             const data = await peopleServiceSN.setFriend(id, id_friend, title);

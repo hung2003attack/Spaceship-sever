@@ -9,11 +9,10 @@ class CheckIP {
                 console.log('err Ip', err);
                 return next();
             }
+
             const count = Number(reply);
             if (count > 50) {
-                return res
-                    .status(200)
-                    .json({ error: 'There are a lot of requests in a minute. Please try again later.', status: 9999 });
+                return res.status(200).json({ content: 'There are a lo. Please try again later.', status: 9999 });
             }
             redisClient.set(ip_User, count + 1);
             redisClient.expire(ip_User, 60);

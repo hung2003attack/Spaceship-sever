@@ -38,6 +38,20 @@ io.on('connection', (client: any) => {
     client.on('disconnect', () => {
         connection.delete(client.userId);
         console.log('clien disconnect', client.userId);
+        const key_private = client.userId + 'private';
+        redisClient.lrange(key_private, 0, -1, (err: any, items: string[]) => {
+            if (err) console.log(err);
+            items.forEach((item) => {
+                redisClient.del(item, (err: any, count: any) => {
+                    if (err) console.log(err);
+                    console.log(`Deleted ${count} key(s)`);
+                });
+            });
+        });
+        redisClient.del(key_private, (err: any, count: number) => {
+            if (err) console.log(err);
+            console.log(`Deleted ${count} key(s)`);
+        });
         client.broadcast.emit('user disconnected', JSON.stringify(Array.from(connection)));
     });
     client.on('offline', (res: string) => {
