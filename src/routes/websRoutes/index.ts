@@ -6,9 +6,9 @@ import userRoute from './user';
 import peopleRoute from './people';
 function routeSN(app: any) {
     console.log('erararea');
-    app.use('/api/SN/user', jwtAuth.verifyToken, userRoute);
-    app.use('/api/SN/home', jwtAuth.verifyToken, homeRoute);
-    app.use('/api/SN/profile', jwtAuth.verifyToken, searchRoute);
-    app.use('/api/SN/people', jwtAuth.verifyToken, peopleRoute);
+    app.use('/api/SN/user', userRoute);
+    app.use('/api/SN/home', homeRoute);
+    app.use('/api/SN/profile', searchRoute);
+    app.use('/api/SN/people', peopleRoute);
 }
 export default routeSN;

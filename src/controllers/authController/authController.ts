@@ -1,5 +1,6 @@
 import { redisClient } from '../..';
 import authServices from '../../services/AuthServices/AuthServices';
+import Token from '../../services/TokensService/Token';
 
 class authController {
     login = async (req: any, res: any) => {
@@ -39,6 +40,7 @@ class authController {
                 if (err) console.log(err);
                 console.log(`Deleted ${count} key(s)`);
             });
+            Token.deleteToken(res);
             return res.status(200).json({ status: 1, message: data.message });
         }
         return res.status(401).json({ status: 0, message: data.message });

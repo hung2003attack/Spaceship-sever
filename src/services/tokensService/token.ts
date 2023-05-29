@@ -19,7 +19,16 @@ class Token {
             console.log(error, 'reFreshToken');
         }
     };
-    deleteToken(res: { clearCookie: (arg0: string) => void }) {
+    deleteToken(res: {
+        clearCookie: (arg0: string) => void;
+        status: (arg0: number) => {
+            (): any;
+            new (): any;
+            json: { (arg0: { status: number; message: string }): any; new (): any };
+        };
+    }) {
+        console.log('delete coookies');
+
         res.clearCookie('sn');
         res.clearCookie('tks');
         res.clearCookie('k_user');

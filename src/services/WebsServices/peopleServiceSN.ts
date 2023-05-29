@@ -10,10 +10,27 @@ class PeopleService {
     getPeopleAll(id: string) {
         return new Promise(async (resolve, reject) => {
             try {
+                // const friends_id_first = await db.friends
+                //     .findAll({
+                //         where: {
+                //             [Op.or]: [
+                //                 { idCurrentUser: id, level: 1 },
+                //                 { idFriend: id, level: 1 },
+                //             ],
+                //         },
+                //         attributes: ['idFriend', 'idCurrentUser'],
+                //         raw: true,
+                //     })
+                //     .then((fr: { idFriend: string; idCurrentUser: string }[]) =>
+                //         fr.map((f) => (f.idFriend !== id ? f.idFriend : f.idCurrentUser !== id ? f.idCurrentUser : '')),
+                //     );
                 const friends_id = await db.friends
                     .findAll({
                         where: {
-                            [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
+                            [Op.or]: [
+                                { idCurrentUser: id, level: 2 },
+                                { idFriend: id, level: 2 },
+                            ],
                         },
                         attributes: ['idFriend', 'idCurrentUser'],
                         raw: true,
@@ -21,10 +38,14 @@ class PeopleService {
                     .then((fr: { idFriend: string; idCurrentUser: string }[]) =>
                         fr.map((f) => (f.idFriend !== id ? f.idFriend : f.idCurrentUser !== id ? f.idCurrentUser : '')),
                     );
+
                 const relatives_id = await db.relatives
                     .findAll({
                         where: {
-                            [Op.or]: [{ id_user: id }, { id_relative: id }],
+                            [Op.or]: [
+                                { id_user: id, really: 1 },
+                                { id_relative: id, really: 1 },
+                            ],
                         },
                         attributes: ['id_user', 'id_relative', 'createdAt'],
                         raw: true,
@@ -43,9 +64,33 @@ class PeopleService {
                             where: {
                                 [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
                             },
-                            as: 'id_user',
+                            as: 'id_f_user',
                             attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
                             required: true,
+                        },
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [
+                                    { id_user: id, really: 0 },
+                                    { id_relative: id, really: 0 },
+                                ],
+                            },
+                            as: 'id_r_user',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: false,
+                        },
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [
+                                    { id_user: id, really: 0 },
+                                    { id_relative: id, really: 0 },
+                                ],
+                            },
+                            as: 'id_relative',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: false,
                         },
                     ],
                     raw: true,
@@ -64,11 +109,54 @@ class PeopleService {
                             attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
                             required: true,
                         },
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [
+                                    { id_user: id, really: 0 },
+                                    { id_relative: id, really: 0 },
+                                ],
+                            },
+                            as: 'id_r_user',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: false,
+                        },
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [
+                                    { id_user: id, really: 0 },
+                                    { id_relative: id, really: 0 },
+                                ],
+                            },
+                            as: 'id_relative',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: false,
+                        },
                     ],
                     raw: true,
                     nest: true,
                 });
-                const data_r_user = await db.users.findAll({
+                /// keep here
+                // const data_r_user = await db.users.findAll({
+                //     where: { id: { [Op.in]: relatives_id } },
+                //     attributes: attributes,
+                //     // include: [
+                //     //     {
+                //     //         model: db.relatives,
+                //     //         where: {
+                //     //             [Op.or]: [{ id_user: id }, { id_relative: id }],
+                //     //         },
+                //     //         as: 'id_r_user',
+                //     //         attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                //     //         required: true,
+                //     //     },
+                //     // ],
+                //     raw: true,
+                //     nest: true,
+                // });
+
+                const d_relatives_first = await db.users.findAll({
                     where: { id: { [Op.in]: relatives_id } },
                     attributes: attributes,
                     include: [
@@ -85,8 +173,7 @@ class PeopleService {
                     raw: true,
                     nest: true,
                 });
-
-                const data_relatives = await db.users.findAll({
+                const d_relatives_second = await db.users.findAll({
                     where: { id: { [Op.in]: relatives_id } },
                     attributes: attributes,
                     include: [
@@ -103,8 +190,9 @@ class PeopleService {
                     raw: true,
                     nest: true,
                 });
-                const dataAllRelatives = data_r_user.concat(data_relatives);
+
                 const all_id = friends_id.concat(relatives_id);
+                const data_relatives = d_relatives_first.concat(d_relatives_second);
                 const dataAllFriends = data_f_Users.concat(dataFriends);
 
                 all_id.push(id);
@@ -112,12 +200,64 @@ class PeopleService {
                     where: { id: { [Op.notIn]: all_id } },
                     order: db.sequelize.random(),
                     limit: 20,
+                    include: [
+                        {
+                            model: db.friends,
+                            where: {
+                                [Op.or]: [
+                                    { idCurrentUser: id, level: 1 },
+                                    { idFriend: id, level: 1 },
+                                ],
+                            },
+                            as: 'id_friend',
+                            attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
+                            raw: true,
+                            required: false,
+                        },
+                        {
+                            model: db.friends,
+                            where: {
+                                [Op.or]: [
+                                    { idCurrentUser: id, level: 1 },
+                                    { idFriend: id, level: 1 },
+                                ],
+                            },
+                            as: 'id_f_user',
+                            attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
+                            required: false,
+                        },
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [
+                                    { id_user: id, really: 0 },
+                                    { id_relative: id, really: 0 },
+                                ],
+                            },
+                            as: 'id_r_user',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: false,
+                        },
+                        {
+                            model: db.relatives,
+                            where: {
+                                [Op.or]: [
+                                    { id_user: id, really: 0 },
+                                    { id_relative: id, really: 0 },
+                                ],
+                            },
+                            as: 'id_relative',
+                            attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
+                            required: false,
+                        },
+                    ],
                     attributes: attributes,
                     raw: true,
+                    nest: true,
                 });
-                console.log(dataAllFriends);
+                console.log('data_relatives', data_relatives, relatives_id);
 
-                resolve({ trangers: dataStrangers, friends: dataAllFriends, family: dataAllRelatives });
+                resolve({ strangers: dataStrangers, friends: dataAllFriends, family: data_relatives });
             } catch (error) {
                 reject(error);
             }
@@ -155,7 +295,7 @@ class PeopleService {
                     if (data[0]._options.isNewRecord && id_user && id_fr && id_message) {
                         const user = await db.users.findOne({
                             where: { id: id_user },
-                            attributes: ['avatar', 'fullName', 'nickName', 'gender'],
+                            attributes: ['id', 'avatar', 'fullName', 'nickName', 'gender'],
                             raw: true,
                         });
                         const mes = await db.messages.create(

@@ -8,7 +8,7 @@ class Security {
             try {
                 const user = await db.users.findAll({
                     where: { phoneNumberEmail: email },
-                    attributes: ['id', 'phoneNumberEmail', 'password', 'avatar', 'fullName', 'gender'],
+                    attributes: ['id', 'phoneNumberEmail', 'password'],
                     raw: true,
                 });
                 if (user) {

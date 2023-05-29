@@ -34,17 +34,17 @@ module.exports = {
             sn:
             {
                 type: Sequelize.STRING(3),
-                defaultValue: "VN",
+                defaultValue: "vi",
                 allowNull: false
             }, l:
             {
                 type: Sequelize.STRING(3),
-                defaultValue: "VN",
+                defaultValue: "vi",
                 allowNull: false
             },
             w: {
                 type: Sequelize.STRING(3),
-                defaultValue: "VN",
+                defaultValue: "vi",
                 allowNull: false
             },
             createdAt: { type: Sequelize.DATE, },

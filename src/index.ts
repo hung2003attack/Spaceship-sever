@@ -12,6 +12,7 @@ const Redis = require('ioredis');
 
 import Server from './connectDatabase/connect';
 import checkIP from './middleware/checkIP';
+import jwtAuth from './middleware/jwtAuth';
 require('dotenv').config();
 
 const app = express();
@@ -77,6 +78,12 @@ const port = process.env.PORT || 3001;
 //     level: 6,
 
 // }))
+app.use((req: any, res: any, next) => {
+    res.io = io;
+    req.redisClient = redisClient;
+    next();
+});
+
 app.use(cookieParser(process.env.SECRET));
 app.use(cors({ origin: ['http://192.168.0.104:3000', 'http://localhost:3000'], credentials: true }));
 app.use(morgan('combined'));
@@ -88,6 +95,7 @@ Server.connect();
 // Server.socket(io);
 
 route(app);
+app.use(jwtAuth.verifyToken);
 routeSN(app);
 viewEngine(app);
 

@@ -6,7 +6,7 @@ class peopleController {
         try {
             const id = req.cookies.k_user;
             const key: string = id + 'people';
-            const key_private = id + 'private';
+            const key_private: string = id + 'private';
 
             redisClient.get(key, async (err: any, data: string) => {
                 console.log(JSON.stringify(data), 'ere');
@@ -39,9 +39,9 @@ class peopleController {
         try {
             const id: string = req.cookies.k_user;
             const title: string = req.body.params.title;
-            const id_friend = req.body.params.id_friend;
-            const key_user = id + 'people';
-            const key_friend = id_friend + 'people';
+            const id_friend: string = req.body.params.id_friend;
+            const key_user: string = id + 'people';
+            const key_friend: string = id_friend + 'people';
 
             redisClient.del(key_user, (err: any, data: string) => {
                 if (err) console.log('Set Value faild!', err);
@@ -57,7 +57,7 @@ class peopleController {
     };
     setRequest = async (req: any, res: any) => {
         const id: string = req.cookies.k_user;
-        const id_friend = req.body.params.id_friend;
+        const id_friend: string = req.body.params.id_friend;
         console.log('id_friend', id_friend);
         const data = await peopleServiceSN.setRequest(id, id_friend);
     };

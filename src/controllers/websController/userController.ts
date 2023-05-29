@@ -3,10 +3,15 @@ import UserServiceSN from '../../services/WebsServices/UserServiceSN';
 class userController {
     getById = async (req: any, res: any) => {
         try {
-            const id: string = req.body.id;
-            const key = id + 'getById';
-            const key_private = id + 'private';
-            redisClient.lrange(key_private, 0, -1, (err: any, items: string[]) => {
+            const redisClients = req.redisClient;
+            const id: string = req.cookies.k_user;
+            const key: string = id + 'getById';
+            const key_private: string = id + 'private';
+            const browser_id = req.headers['user-agent'];
+            let bros: any = '';
+            let itemss: string[] = [];
+            // key_private to use taking control key_values of user are havine in redis and when logout it will delete all but not warning_browser
+            redisClients.lrange(key_private, 0, -1, (err: any, items: string[]) => {
                 if (err) console.log(err);
                 if (!items.includes(key))
                     redisClient.rpush(key_private, key, (err: any, length: number) => {
@@ -14,19 +19,33 @@ class userController {
                         console.log(`Item added to the list. New length: ${length}`);
                     });
             });
+            redisClients.lrange(id + 'warning_browsers', 0, -1, (err: any, items: string[]) => {
+                if (err) console.log(err);
+                itemss = items;
+                items?.forEach((item) => {
+                    redisClients.get(item, (err: any, result: string) => {
+                        if (err) console.log(err);
+                        const dt = JSON.parse(result);
+                        console.log('dt.prohibit', dt.prohibit);
 
-            redisClient.get(key, async (err: any, data: string) => {
+                        if (dt.prohibit) bros = JSON.parse(result);
+                    });
+                });
+            });
+
+            redisClients.get(key, async (err: any, data: string) => {
                 if (err) console.log('get user failed', err);
-
                 const user = JSON.parse(data);
-                console.log(user);
+                console.log(user, bros, ' bros', itemss, ' itemss', data, 'data');
+                if (bros && !itemss.includes(browser_id) && user) user.warning_browser = bros;
                 if (user) {
                     console.log('redis user here', user);
                     return res.status(200).json(user);
                 } else {
                     const userData: any = await UserServiceSN.getById(id, req.body.params);
-                    redisClient.set(key, JSON.stringify(userData.data));
-                    console.log('user outside ');
+                    redisClients.set(key, JSON.stringify(userData.data));
+                    if (bros && !itemss.includes(browser_id)) userData.data.warning_browser = bros;
+                    console.log('user outside ', userData, key);
                     if (userData.status === 1) return res.status(200).json(userData.data);
                     return res.status(500).json({ mess: 'Failed!', status: 0 });
                 }
@@ -60,10 +79,10 @@ class userController {
             const ass: number = req.body.as;
             const id = req.cookies.k_user;
             console.log(ass, id, 'heeeee');
-            const key = id + 'getById';
+            const key: string = id + 'getById';
             const data: any = await UserServiceSN.setAs(ass, id);
             redisClient.del(key, (err: any, data: string) => {
-                if (err) console.log('Set Value faild!', err);
+                if (err) console.log('del Value faild!', err);
             });
             return res.status(200).json(data);
         } catch (error) {

@@ -14,7 +14,6 @@ class RefreshTokenCookie {
         jwt.verify(refreshToken, '' + process.env.REFRESH_TOKEN_SECRET + '', (err: any, user: any) => {
             if (err || idUser !== user.id) {
                 token.deleteToken(res);
-                return res.status(403).json({ status: 0, message: "You're not Authenticated" });
             }
             delete user.iat;
             const newAccessToken = Token.accessTokenF(user);

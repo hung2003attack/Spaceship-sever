@@ -11,7 +11,7 @@ class CheckIP {
             }
 
             const count = Number(reply);
-            if (count > 50) {
+            if (count > 40) {
                 return res.status(200).json({ content: 'There are a lo. Please try again later.', status: 9999 });
             }
             redisClient.set(ip_User, count + 1);

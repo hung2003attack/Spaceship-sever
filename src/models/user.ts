@@ -17,7 +17,7 @@ module.exports = (
          */
         static associate(models: any) {
             // define association here
-            user.hasOne(models.friends, { foreignKey: 'idCurrentUser', as: 'id_user' });
+            user.hasOne(models.friends, { foreignKey: 'idCurrentUser', as: 'id_f_user' });
             user.hasOne(models.friends, { foreignKey: 'idFriend', as: 'id_friend' });
             user.hasOne(models.relatives, { foreignKey: 'id_user', as: 'id_r_user' });
             user.hasOne(models.relatives, { foreignKey: 'id_relative', as: 'id_relative' });
