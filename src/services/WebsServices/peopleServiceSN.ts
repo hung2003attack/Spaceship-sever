@@ -307,7 +307,7 @@ class PeopleService {
                             },
                             { raw: true },
                         );
-                        resolve({ id_friend: id_fr, mes, user });
+                        resolve({ id_friend: id_fr, mes, user, data: data[0] });
                     } else {
                         console.log('Was friend');
                     }
@@ -349,6 +349,62 @@ class PeopleService {
                 console.log('get All Friends');
 
                 resolve(data);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    // {idCurrentUser: id_user, idFriend: id_req},{idCurrentUser: id_req,idFriend: id_user}
+    delete(id_user: string, id_req: string, kindOf?: string) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (kindOf) {
+                    if (kindOf === 'friends') {
+                        const data = await db.friends.findOne({
+                            where: {
+                                [Op.or]: [
+                                    { idCurrentUser: id_user, idFriend: id_req },
+                                    { idCurrentUser: id_req, idFriend: id_user },
+                                ],
+                            },
+                        });
+                        if (data) {
+                            const res = await db.messages.destroy({
+                                where: { id_message: data.dataValues.id_message },
+                            });
+                            if (res > 0) {
+                                await data.destroy();
+                                resolve(data);
+                            }
+                            resolve(false);
+                        }
+                    } else {
+                        console.log('relative', kindOf);
+                    }
+                } else {
+                    console.log('all');
+                }
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    setConfirm(id: string, id_fr: string, kindOf: string) {
+        return new Promise(async (resolve, reject) => {
+            try {
+                if (kindOf) {
+                    if (kindOf === 'friends') {
+                        const res = await db.friends.update(
+                            {
+                                level: 2,
+                            },
+                            { where: { idCurrentUser: id_fr, idFriend: id, level: 1 }, raw: true },
+                        );
+                        resolve({ ok: res[0], id_fr: id_fr, id: id });
+                    }
+                } else {
+                    console.log('relatives');
+                }
             } catch (error) {
                 reject(error);
             }

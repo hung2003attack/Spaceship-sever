@@ -21,6 +21,7 @@ module.exports = (sequelize: any, DataTypes: { STRING: any; DATE: any }) => {
             idCurrentUser: DataTypes.STRING,
             idFriend: DataTypes.STRING,
             id_message: DataTypes.STRING,
+            level: DataTypes.STRING,
             createdAt: DataTypes.DATE,
         },
         {

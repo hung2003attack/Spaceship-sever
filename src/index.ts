@@ -67,10 +67,6 @@ io.on('connection', (client: any) => {
     });
 
     // user connected
-    client.on('message request add friend', (msg: string) => {
-        console.log('received message' + msg);
-        io.emit(`Request others?id=${JSON.parse(msg).id_friend}`, msg);
-    });
 });
 const port = process.env.PORT || 3001;
 
@@ -85,7 +81,7 @@ app.use((req: any, res: any, next) => {
 });
 
 app.use(cookieParser(process.env.SECRET));
-app.use(cors({ origin: ['http://192.168.0.104:3000', 'http://localhost:3000'], credentials: true }));
+app.use(cors({ origin: ['http://192.168.99.102:3000', 'http://localhost:3000'], credentials: true }));
 app.use(morgan('combined'));
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));

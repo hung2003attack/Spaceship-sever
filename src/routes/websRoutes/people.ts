@@ -6,4 +6,6 @@ const router = express.Router();
 router.get('/getPeopleAll', peopleController.getPeopleAll);
 router.post('/setFriend', peopleController.setFriend);
 router.get('/getFriendAll', peopleController.getFriendAll);
+router.post('/deleteReq', peopleController.delete);
+router.patch('/setConfirm', peopleController.setConfirm);
 export default router;
