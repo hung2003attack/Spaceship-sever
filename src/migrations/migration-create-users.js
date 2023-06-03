@@ -6,7 +6,7 @@ module.exports = {
             id: {
                 primaryKey: true,
                 allowNull: false,
-                type: Sequelize.STRING,
+                type: Sequelize.STRING(50),
             },
             phoneNumberEmail: { type: Sequelize.STRING, allowNull: false },
             password: { type: Sequelize.STRING, allowNull: false },

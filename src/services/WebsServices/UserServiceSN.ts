@@ -62,7 +62,7 @@ class UserService {
             },
         );
     }
-    setLg = (id: string, lg: string) => {
+    setLg(id: string, lg: string) {
         return new Promise(async (resolve: (arg0: any) => void, reject: (arg0: unknown) => void) => {
             try {
                 const data = await db.users.update({ sn: lg }, { where: { id: id } });
@@ -71,8 +71,8 @@ class UserService {
                 reject(error);
             }
         });
-    };
-    setAs = (ass: number, id: string) => {
+    }
+    setAs(ass: number, id: string) {
         return new Promise(async (resolve: (arg0: any) => void, reject: (arg0: unknown) => void) => {
             try {
                 const data = await db.users.update({ as: ass }, { where: { id: id }, raw: true });
@@ -83,6 +83,49 @@ class UserService {
                 reject(error);
             }
         });
-    };
+    }
+    getNewMes(id: string) {
+        return new Promise(async (resolve: (arg0: { user: any }) => void, reject: (arg0: unknown) => void) => {
+            try {
+                const id_f = await db.friends
+                    .findAll({
+                        limit: 5,
+                        where: { idFriend: id, level: 1 },
+                        order: [['createdAt', 'DESC']],
+                        raw: true,
+                    })
+                    .then((x: { idCurrentUser: string }[]) => x.map((v) => v.idCurrentUser));
+                const us = await db.users
+                    .findAll({
+                        where: { id: { [Op.in]: id_f } },
+                        include: [
+                            {
+                                model: db.friends,
+                                where: {
+                                    idCurrentUser: { [Op.in]: id_f },
+                                    idFriend: id,
+                                    level: 1,
+                                },
+                                as: 'id_f_user',
+                                attributes: ['createdAt'],
+                            },
+                        ],
+                        nest: true,
+                        attributes: ['id', 'avatar', 'fullName', 'nickName', 'gender'],
+                        raw: true,
+                    })
+                    .then((u: any) =>
+                        u.map((s: any) => {
+                            s.status = 1;
+                            return s;
+                        }),
+                    );
+                console.log('heeee---------------', id_f, 'ussss', us);
+                resolve({ user: us });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
 }
 export default new UserService();

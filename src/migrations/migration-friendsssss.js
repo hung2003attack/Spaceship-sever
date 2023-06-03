@@ -13,7 +13,6 @@ module.exports = {
         idCurrentUser: { type: Sequelize.STRING(50), allowNull: false },
         idFriend: { type: Sequelize.STRING(50), allowNull: false },
         level: { type: Sequelize.INTEGER(1), allowNull: false, defaultValue: 1 },
-        id_message: { type: Sequelize.STRING(50), unique: true, allowNull: false },
         createdAt: { type: Sequelize.DATE, allowNull: false, }
       }
     )

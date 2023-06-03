@@ -5,4 +5,6 @@ router.post('/getById', userController.getById);
 router.post('/getByName', userController.getByName);
 router.post('/setLg', userController.setLg);
 router.patch('/setAs', userController.setAs);
+router.get('/getNewMes', userController.getNewMes);
+router.get('/delMessage', userController.delMessage);
 export default router;

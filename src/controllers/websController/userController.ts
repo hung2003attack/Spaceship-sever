@@ -89,5 +89,46 @@ class userController {
             console.log(error);
         }
     };
+    getNewMes = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            redisClient.get(`${id} user_message`, (err: any, rsu: string) => {
+                if (err) console.log('get Value faild!', err);
+                redisClient.get(`${id} message`, async (err: any, rsuls: string) => {
+                    if (err) console.log(err);
+                    if (JSON.parse(rsu)?.user.length > 0) {
+                        const ys = JSON.parse(rsu);
+                        ys.quantity = JSON.parse(rsuls)?.quantity;
+                        console.log('redis 1');
+                        return res.status(200).json(ys);
+                    } else {
+                        console.log('mysql 1');
+                        const data: any = await UserServiceSN.getNewMes(id);
+                        redisClient.set(`${id} user_message`, JSON.stringify(data));
+                        data.quantity = JSON.parse(rsuls)?.quantity;
+                        console.log('full', data);
+
+                        return res.status(200).json(data);
+                    }
+                });
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    delMessage = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            const redisClient = req.redisClient;
+            redisClient.get(`${id} message`, (err: any, rs: string) => {
+                if (err) console.log(err);
+                if (rs && JSON.parse(rs).quantity > 0)
+                    redisClient.set(`${id} message`, JSON.stringify({ quantity: 0 }));
+            });
+            return res.status(200).json({ ok: true });
+        } catch (error) {
+            console.log(error);
+        }
+    };
 }
 export default new userController();

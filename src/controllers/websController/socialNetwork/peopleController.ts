@@ -38,7 +38,6 @@ class peopleController {
     setFriend = async (req: any, res: any) => {
         try {
             const id: string = req.cookies.k_user;
-            const title: string = req.body.params.title;
             const id_friend: string = req.body.params.id_friend;
             const key_user: string = id + 'people';
             const key_friend: string = id_friend + 'people';
@@ -49,10 +48,26 @@ class peopleController {
             redisClient.del(key_friend, (err: any, data: string) => {
                 if (err) console.log('Del Value faild!', err);
             });
-            const data: any = await peopleServiceSN.setFriend(id, id_friend, title);
-            if (data.id_friend) io.emit(`Request others?id=${data.id_friend}`, JSON.stringify(data));
+            const data: any = await peopleServiceSN.setFriend(id, id_friend);
 
-            return res.status(200).json(data);
+            redisClient.get(`${data.id_friend} message`, (err: any, rs: string) => {
+                if (err) console.log(err);
+                if (data && JSON.parse(rs)) {
+                    redisClient.set(
+                        `${data.id_friend} message`,
+                        JSON.stringify({ quantity: JSON.parse(rs).quantity + 1 }),
+                    );
+                } else {
+                    redisClient.set(`${data.id_friend} message`, JSON.stringify({ quantity: 1 }));
+                }
+                redisClient.get(`${data.id_friend} message`, (err: any, rs: string) => {
+                    if (err) console.log(err);
+                    if (JSON.parse(rs).quantity > 0) data.quantity = JSON.parse(rs).quantity;
+                    io.emit(`Request others?id=${data.id_friend}`, JSON.stringify(data));
+                });
+                redisClient.del(`${data.id_friend} user_message`);
+                return res.status(200).json(data);
+            });
         } catch (error) {
             console.log(error);
         }
@@ -80,7 +95,7 @@ class peopleController {
             const redisClient = req.redisClient;
             const io = res.io;
             const data: any = await peopleServiceSN.delete(id, id_req, kindOf);
-            console.log(data, 'delete');
+            console.log(data, 'delete', 'id_req', id_req);
 
             if (data) {
                 if (data.idFriend)
@@ -91,19 +106,45 @@ class peopleController {
                                 id: 106,
                                 idCurrentUser: data.idCurrentUser,
                                 idFriend: null,
-                                id_message: null,
                                 createdAt: null,
                             },
                         }),
                     );
+                io.emit(
+                    `Del request others?id=${data.idCurrentUser}`,
+                    JSON.stringify({
+                        data: {
+                            id: 106,
+                            idCurrentUser: data.idFriend,
+                            idFriend: null,
+                            createdAt: null,
+                        },
+                    }),
+                );
+                redisClient.get(`${data.idFriend} message`, (err: any, rs: string) => {
+                    if (err) console.log(err);
+                    if (data && rs && JSON.parse(rs).quantity > 0) {
+                        redisClient.set(
+                            `${data.idFriend} message`,
+                            JSON.stringify({ quantity: JSON.parse(rs).quantity - 1 }),
+                        );
+                    }
+                });
                 redisClient.del(id + 'people', (err: any) => {
                     if (err) console.log('Del Value faild!', err);
                 });
                 redisClient.del(id_req + 'people', (err: any) => {
                     if (err) console.log('Del Value faild!', err);
-                    io.emit(`Delete request friends or relatives${id_req}`);
+                    io.emit(`Delete request friends or relatives${data.idFriend}`, data.idCurrentUser);
                 });
             }
+            redisClient.get(`${data.idFriend} message`, (err: any, rs: string) => {
+                if (err) console.log(err);
+                if (rs) data.quantity = JSON.parse(rs).quantity;
+            });
+            redisClient.del(`${data.idFriend} user_message`, (err: any) => {
+                if (err) console.log('Del Value faild!', err);
+            });
             return res.status(200).json(data);
         } catch (error) {
             console.log(error, 'delete Request');
@@ -115,13 +156,19 @@ class peopleController {
             const kindOf = req.body.params.kindOf;
             const id_fr = req.body.params.id_req;
             const io = res.io;
-            console.log('vo', kindOf, id);
+            const atInfo = req.body.params.atInfor;
+            console.log('vo', atInfo);
             const data: { ok: number; id_fr: string; id: string } | any = await peopleServiceSN.setConfirm(
                 id,
                 id_fr,
                 kindOf,
             );
+            if (data.ok === 1 && atInfo) {
+                io.emit(`Confirmed atInfo ${data.id}`, JSON.stringify({ ok: 1, id_fr: data.id, id: data.id_fr }));
+            }
+
             if (data.ok === 1) io.emit(`Confirmed ${data.id_fr}`, JSON.stringify(data));
+            redisClient.del(`${data.id_fr} user_message`);
             return res.status(200).json(data);
         } catch (error) {
             console.log(error, 'setConfrim');

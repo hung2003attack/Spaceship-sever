@@ -137,24 +137,6 @@ class PeopleService {
                     raw: true,
                     nest: true,
                 });
-                /// keep here
-                // const data_r_user = await db.users.findAll({
-                //     where: { id: { [Op.in]: relatives_id } },
-                //     attributes: attributes,
-                //     // include: [
-                //     //     {
-                //     //         model: db.relatives,
-                //     //         where: {
-                //     //             [Op.or]: [{ id_user: id }, { id_relative: id }],
-                //     //         },
-                //     //         as: 'id_r_user',
-                //     //         attributes: ['id_user', 'id_relative', 'title', 'really', 'createdAt'],
-                //     //         required: true,
-                //     //     },
-                //     // ],
-                //     raw: true,
-                //     nest: true,
-                // });
 
                 const d_relatives_first = await db.users.findAll({
                     where: { id: { [Op.in]: relatives_id } },
@@ -255,7 +237,6 @@ class PeopleService {
                     raw: true,
                     nest: true,
                 });
-                console.log('data_relatives', data_relatives, relatives_id);
 
                 resolve({ strangers: dataStrangers, friends: dataAllFriends, family: data_relatives });
             } catch (error) {
@@ -263,7 +244,7 @@ class PeopleService {
             }
         });
     }
-    setFriend(id: string, id_friend: string, title: string) {
+    setFriend(id: string, id_friend: string) {
         return new Promise(async (resolve, reject) => {
             try {
                 console.log('data here');
@@ -283,31 +264,28 @@ class PeopleService {
                         defaults: {
                             idCurrentUser: id,
                             idFriend: id_friend,
-                            id_message: id_mess,
                             createdAt: date,
                         },
                     });
                     const id_user = data[0].dataValues.idCurrentUser;
                     const id_fr = data[0].dataValues.idFriend;
-                    const id_message = data[0].dataValues.id_message;
 
-                    console.log(data, id_user, id_fr, id_message);
-                    if (data[0]._options.isNewRecord && id_user && id_fr && id_message) {
+                    console.log(data, id_user, id_fr);
+                    if (data[0]._options.isNewRecord && id_user && id_fr) {
                         const user = await db.users.findOne({
                             where: { id: id_user },
                             attributes: ['id', 'avatar', 'fullName', 'nickName', 'gender'],
                             raw: true,
                         });
-                        const mes = await db.messages.create(
-                            {
-                                id_message: id_message,
-                                status: 1,
-                                title: title,
-                                createdAt: date,
-                            },
-                            { raw: true },
-                        );
-                        resolve({ id_friend: id_fr, mes, user, data: data[0] });
+                        user.status = 1;
+                        user.id_f_user;
+                        user.id_f_user = { createdAt: data[0].dataValues.createdAt };
+                        resolve({
+                            id_friend: id_fr,
+                            user,
+                            data: data[0],
+                            quantity: 1,
+                        });
                     } else {
                         console.log('Was friend');
                     }
@@ -369,15 +347,10 @@ class PeopleService {
                             },
                         });
                         if (data) {
-                            const res = await db.messages.destroy({
-                                where: { id_message: data.dataValues.id_message },
-                            });
-                            if (res > 0) {
-                                await data.destroy();
-                                resolve(data);
-                            }
-                            resolve(false);
+                            await data.destroy();
+                            resolve(data);
                         }
+                        resolve(false);
                     } else {
                         console.log('relative', kindOf);
                     }
