@@ -73,24 +73,7 @@ class UserService {
                         nest: true,
                         raw: true,
                     });
-                    console.log(data, personal);
-                    if (personal) {
-                        if (data) {
-                            const isFriend = await db.friends.findOne({
-                                where: {
-                                    [Op.or]: [
-                                        { idCurrentUser: data.id, idFriend: id },
-                                        { idCurrentUser: id, idFriend: data.id },
-                                    ],
-                                },
-                                raw: true,
-                            });
-                            console.log(isFriend, 'isFriend');
-                            if (data) resolve({ status: 1, data: { user: data, friend: isFriend } });
-                        }
-                    } else {
-                        if (data) resolve({ status: 1, data: data });
-                    }
+                    if (data) resolve({ status: 1, data: data });
 
                     resolve({ status: 0 });
                 } catch (error) {
@@ -198,7 +181,9 @@ class UserService {
                             where: { id: id },
                         },
                     );
-                    if (data[0] === 1) resolve(data[0]);
+                    console.log('value', value, data);
+
+                    resolve(data[0]);
                 } catch (error) {
                     reject(error);
                 }
