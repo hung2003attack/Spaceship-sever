@@ -11,7 +11,7 @@ import compression from 'compression';
 const Redis = require('ioredis');
 
 import Server from './connectDatabase/connect';
-import checkIP from './middleware/checkIP';
+import checkRequest from './middleware/checkRequest';
 import jwtAuth from './middleware/jwtAuth';
 require('dotenv').config();
 
@@ -83,9 +83,9 @@ app.use((req: any, res: any, next) => {
 app.use(cookieParser(process.env.SECRET));
 app.use(cors({ origin: ['http://192.168.99.102:3000', 'http://localhost:3000'], credentials: true }));
 app.use(morgan('combined'));
-app.use(bodyParser.json());
-app.use(bodyParser.urlencoded({ extended: true }));
-app.use(checkIP.requests);
+app.use(bodyParser.json({ limit: '50mb' }));
+app.use(bodyParser.urlencoded({ limit: '50mb', extended: true }));
+app.use(checkRequest.ip);
 
 Server.connect();
 // Server.socket(io);

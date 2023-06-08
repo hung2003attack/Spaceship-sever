@@ -197,22 +197,34 @@ class AuthServices {
                         const date = moment().format('YYYY-MM-DD HH:mm:ss');
                         console.log(date, 'date');
                         const password = await Security.hash(data.password);
-                        const res = await db.users.create({
-                            id: primaryKey(),
-                            fullName: data.name,
-                            password: password,
-                            phoneNumberEmail: data.phoneMail,
-                            gender: data.gender,
-                            birthday: data.date,
-                            admin: false,
-                            createdAt: date,
-                        });
-                        if (res.dataValues.id)
-                            resolve({
-                                result: 'ok, Created Successful',
-                                check: 1,
-                                acc: checkPhoneNumberEmail.length,
+                        const res = await db.users.create(
+                            {
+                                id: primaryKey(),
+                                fullName: data.name,
+                                password: password,
+                                phoneNumberEmail: data.phoneMail,
+                                gender: data.gender,
+                                birthday: data.date,
+                                admin: false,
+                                createdAt: date,
+                            },
+                            { raw: true },
+                        );
+                        console.log('ress add', res);
+
+                        if (res.dataValues.id) {
+                            const mores = await db.mores.create({
+                                id_user: res.dataValues.id,
+                                createdAt: date,
                             });
+                            if (mores.dataValues.id_user) {
+                                resolve({
+                                    result: 'ok, Created Successful',
+                                    check: 1,
+                                    acc: checkPhoneNumberEmail.length + 1,
+                                });
+                            }
+                        }
                         resolve({ result: 'ok, Created Failed', check: 0, acc: checkPhoneNumberEmail.length });
                     } catch (err) {
                         reject(err);

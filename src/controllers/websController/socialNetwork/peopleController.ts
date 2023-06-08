@@ -7,12 +7,13 @@ class peopleController {
             const id = req.cookies.k_user;
             const key: string = id + 'people';
             const key_private: string = id + 'private';
+            const rl = req.query.rl;
+            console.log('params', req.query);
 
             redisClient.get(key, async (err: any, data: string) => {
-                console.log(JSON.stringify(data), 'ere');
                 if (err) console.log('get value faild!', err);
                 const people = JSON.parse(data);
-                if (people) {
+                if (people && rl !== 'yes') {
                     console.log(people);
                     return res.status(200).json(people);
                 } else {

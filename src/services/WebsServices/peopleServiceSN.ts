@@ -53,7 +53,7 @@ class PeopleService {
                     .then((rel: { id_user: string; id_relative: string }[]) =>
                         rel.map((r) => (r.id_user !== id ? r.id_user : r.id_relative !== id ? r.id_relative : '')),
                     );
-                const attributes = ['id', 'fullName', 'nickName', 'gender', 'birthday'];
+                const attributes = ['id', 'avatar', 'fullName', 'nickName', 'gender', 'birthday'];
 
                 const data_f_Users = await db.users.findAll({
                     where: { id: { [Op.in]: friends_id } },

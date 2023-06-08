@@ -13,16 +13,20 @@ module.exports = {
         type: Sequelize.STRING(50)
       },
       position: {
-        type: Sequelize.STRING('20')
+        type: Sequelize.STRING('20'),
+        defaultValue: 'user'
       },
       love: {
-        type: Sequelize.INTEGER(10)
+        type: Sequelize.INTEGER(10),
+        defaultValue: 0
       },
       star: {
-        type: Sequelize.INTEGER(10)
+        type: Sequelize.INTEGER(10),
+        defaultValue: 0
       },
       visit: {
-        type: Sequelize.INTEGER(10)
+        type: Sequelize.INTEGER(10),
+        defaultValue: 0
       },
       createdAt: {
         allowNull: false,

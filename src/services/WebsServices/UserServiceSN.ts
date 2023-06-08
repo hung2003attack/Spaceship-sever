@@ -23,17 +23,75 @@ interface PropsParams {
     l?: string;
     w?: string;
 }
+interface PropsParamsMores {
+    position: string;
+    star?: number;
+    love?: number;
+    visit?: number;
+    follow?: number;
+    following?: number;
+}
 class UserService {
-    getById(id: string, params: PropsParams) {
+    getById(id: string, id_req: string, params: PropsParams, mores: PropsParamsMores, personal?: string) {
         return new Promise(
             async (resolve: (arg0: { status: number; data?: any }) => void, reject: (arg0: unknown) => void) => {
                 try {
+                    console.log(mores, Object.keys(mores));
+                    const paramsUser = Object.keys(params);
+                    const paramsMore = Object.keys(mores);
                     const data = await db.users.findOne({
-                        where: { id: id },
-                        attributes: Object.keys(params),
+                        where: { id: id_req },
+                        attributes: paramsUser,
+                        include: [
+                            {
+                                model: db.mores,
+                                where: { id_user: id_req },
+                                attributes: paramsMore,
+                                as: 'id_m_user',
+                                require: true,
+                            },
+                            {
+                                model: db.friends,
+                                where: {
+                                    [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
+                                },
+                                as: 'id_friend',
+                                attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
+                                raw: true,
+                                required: false,
+                            },
+                            {
+                                model: db.friends,
+                                where: {
+                                    [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
+                                },
+                                as: 'id_f_user',
+                                attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
+                                required: false,
+                            },
+                        ],
+                        nest: true,
                         raw: true,
                     });
-                    if (data) resolve({ status: 1, data });
+                    console.log(data, personal);
+                    if (personal) {
+                        if (data) {
+                            const isFriend = await db.friends.findOne({
+                                where: {
+                                    [Op.or]: [
+                                        { idCurrentUser: data.id, idFriend: id },
+                                        { idCurrentUser: id, idFriend: data.id },
+                                    ],
+                                },
+                                raw: true,
+                            });
+                            console.log(isFriend, 'isFriend');
+                            if (data) resolve({ status: 1, data: { user: data, friend: isFriend } });
+                        }
+                    } else {
+                        if (data) resolve({ status: 1, data: data });
+                    }
+
                     resolve({ status: 0 });
                 } catch (error) {
                     reject(error);
@@ -126,6 +184,26 @@ class UserService {
                 reject(error);
             }
         });
+    }
+    changesOne(id: string, value: string, params: PropsParams) {
+        return new Promise(
+            async (resolve: (arg0: { status: number; data?: any }) => void, reject: (arg0: unknown) => void) => {
+                try {
+                    const at: any = params.avatar;
+                    const att: any = params.background;
+                    const name = params.fullName;
+                    const data = await db.users.update(
+                        { [`${at || att || name}`]: value },
+                        {
+                            where: { id: id },
+                        },
+                    );
+                    if (data[0] === 1) resolve(data[0]);
+                } catch (error) {
+                    reject(error);
+                }
+            },
+        );
     }
 }
 export default new UserService();

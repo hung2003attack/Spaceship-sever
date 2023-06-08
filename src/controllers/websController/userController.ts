@@ -1,55 +1,16 @@
+import moment from 'moment';
 import { redisClient } from '../..';
 import UserServiceSN from '../../services/WebsServices/UserServiceSN';
 class userController {
     getById = async (req: any, res: any) => {
         try {
-            const redisClients = req.redisClient;
-            const id: string = req.cookies.k_user;
-            const key: string = id + 'getById';
-            const key_private: string = id + 'private';
-            const browser_id = req.headers['user-agent'];
-            let bros: any = '';
-            let itemss: string[] = [];
-            // key_private to use taking control key_values of user are havine in redis and when logout it will delete all but not warning_browser
-            redisClients.lrange(key_private, 0, -1, (err: any, items: string[]) => {
-                if (err) console.log(err);
-                if (!items.includes(key))
-                    redisClient.rpush(key_private, key, (err: any, length: number) => {
-                        if (err) console.log(err);
-                        console.log(`Item added to the list. New length: ${length}`);
-                    });
-            });
-            redisClients.lrange(id + 'warning_browsers', 0, -1, (err: any, items: string[]) => {
-                if (err) console.log(err);
-                itemss = items;
-                items?.forEach((item) => {
-                    redisClients.get(item, (err: any, result: string) => {
-                        if (err) console.log(err);
-                        const dt = JSON.parse(result);
-                        console.log('dt.prohibit', dt.prohibit);
-
-                        if (dt.prohibit) bros = JSON.parse(result);
-                    });
-                });
-            });
-
-            redisClients.get(key, async (err: any, data: string) => {
-                if (err) console.log('get user failed', err);
-                const user = JSON.parse(data);
-                console.log(user, bros, ' bros', itemss, ' itemss', data, 'data');
-                if (bros && !itemss.includes(browser_id) && user) user.warning_browser = bros;
-                if (user) {
-                    console.log('redis user here', user);
-                    return res.status(200).json(user);
-                } else {
-                    const userData: any = await UserServiceSN.getById(id, req.body.params);
-                    redisClients.set(key, JSON.stringify(userData.data));
-                    if (bros && !itemss.includes(browser_id)) userData.data.warning_browser = bros;
-                    console.log('user outside ', userData, key);
-                    if (userData.status === 1) return res.status(200).json(userData.data);
-                    return res.status(500).json({ mess: 'Failed!', status: 0 });
-                }
-            });
+            const id = req.cookies.k_user;
+            const id_req: string = req.body.id;
+            const mores = req.body.mores;
+            const personal = req.body.personal;
+            const userData: any = await UserServiceSN.getById(id, id_req, req.body.params, mores, personal);
+            if (userData.status === 1) return res.status(200).json(userData.data);
+            return res.status(500).json({ mess: 'Failed!', status: 0 });
         } catch (error) {
             console.log(error);
         }
@@ -126,6 +87,39 @@ class userController {
                     redisClient.set(`${id} message`, JSON.stringify({ quantity: 0 }));
             });
             return res.status(200).json({ ok: true });
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    changesOne = async (req: any, res: any) => {
+        try {
+            const dateTime = moment().format('HH:mm:ss DD-MM-YYYY');
+            const id = req.cookies.k_user;
+            const params = req.body.params.params;
+            const value = req.body.params.value;
+            const redisClient = req.redisClient;
+            console.log(id, 'heeeee', params);
+            if (params.fullName) {
+                redisClient.get(`${id} update Name`, async (err: any, data: string) => {
+                    if (err) console.log(err);
+                    console.log('vo', data);
+                    if (!data) {
+                        const data: any = await UserServiceSN.changesOne(id, value, params);
+                        console.log('data', data);
+
+                        if (data === 1) {
+                            redisClient.set(`${id} update Name`, dateTime);
+                            redisClient.expire(`${id} update Name`, 2592000);
+                            return res.status(200).json(data);
+                        }
+                    } else {
+                        return res.status(200).json(false);
+                    }
+                });
+            } else {
+                const data: any = await UserServiceSN.changesOne(id, value, params);
+                return res.status(200).json(data);
+            }
         } catch (error) {
             console.log(error);
         }
