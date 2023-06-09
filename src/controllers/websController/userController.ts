@@ -100,21 +100,38 @@ class userController {
             const redisClient = req.redisClient;
             console.log(id, 'heeeee', params);
             if (params.fullName) {
-                redisClient.get(`${id} update Name`, async (err: any, data: string) => {
+                const fullName = `${id} update Name`;
+                redisClient.get(fullName, async (err: any, data: string) => {
                     if (err) console.log(err);
-                    console.log('vo', data);
                     if (!data) {
                         const data: any = await UserServiceSN.changesOne(id, value, params);
-                        console.log('data', data);
+                        console.log('data full name', data);
 
                         if (data === 1) {
-                            redisClient.set(`${id} update Name`, dateTime);
-                            redisClient.expire(`${id} update Name`, 2592000);
-                            return res.status(200).json(data);
+                            redisClient.set(fullName, dateTime);
+                            redisClient.expire(fullName, 2592000);
                         }
+                        return res.status(200).json(data);
                     } else {
                         return res.status(200).json(false);
                     }
+                });
+            } else if (params.nickName) {
+                const nickName = `${id} update Nick Name`;
+                redisClient.get(nickName, async (err: any, datas: string) => {
+                    if (err) console.log(err);
+                    const data: any = await UserServiceSN.changesOne(id, value, params);
+                    console.log('data nick name', data);
+
+                    if (datas) {
+                        const ds = JSON.parse(datas);
+                        ds.push(dateTime);
+                        redisClient.set(nickName, JSON.stringify(ds));
+                    } else {
+                        redisClient.set(nickName, JSON.stringify([dateTime]));
+                    }
+                    redisClient.expire(nickName, 2592000);
+                    return res.status(200).json(data);
                 });
             } else {
                 const data: any = await UserServiceSN.changesOne(id, value, params);

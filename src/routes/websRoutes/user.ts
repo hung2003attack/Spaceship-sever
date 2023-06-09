@@ -8,5 +8,5 @@ router.post('/setLg', userController.setLg);
 router.patch('/setAs', userController.setAs);
 router.get('/getNewMes', userController.getNewMes);
 router.get('/delMessage', userController.delMessage);
-router.patch('/changesOne', checkRequest.changeName, userController.changesOne);
+router.patch('/changesOne', checkRequest.changeText, userController.changesOne);
 export default router;

@@ -169,26 +169,26 @@ class UserService {
         });
     }
     changesOne(id: string, value: string, params: PropsParams) {
-        return new Promise(
-            async (resolve: (arg0: { status: number; data?: any }) => void, reject: (arg0: unknown) => void) => {
-                try {
-                    const at: any = params.avatar;
-                    const att: any = params.background;
-                    const name = params.fullName;
-                    const data = await db.users.update(
-                        { [`${at || att || name}`]: value },
-                        {
-                            where: { id: id },
-                        },
-                    );
-                    console.log('value', value, data);
+        return new Promise(async (resolve: (arg0: number) => void, reject: (arg0: unknown) => void) => {
+            try {
+                const at: any = params.avatar;
+                const att: any = params.background;
+                const name = params.fullName;
+                const nickName = params.nickName;
+                if (name || nickName) if (value.length > 30) resolve(0);
+                const data = await db.users.update(
+                    { [`${at || att || name || nickName}`]: value },
+                    {
+                        where: { id: id },
+                    },
+                );
+                console.log('value', value, data);
 
-                    resolve(data[0]);
-                } catch (error) {
-                    reject(error);
-                }
-            },
-        );
+                resolve(data[0]);
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
 }
 export default new UserService();

@@ -21,13 +21,23 @@ class CheckRequest {
 
         // redisClient.get()
     };
-    changeName = (req: any, res: any, next: any) => {
+    changeText = (req: any, res: any, next: any) => {
         const id = req.cookies.k_user;
         const params = req.body.params.params;
         if (params.fullName) {
             redisClient.get(`${id} update Name`, (err: any, data: string) => {
+                if (err) console.log(err);
                 if (data) {
                     return res.status(200).json(data);
+                } else {
+                    next();
+                }
+            });
+        } else if (params.nickName) {
+            redisClient.get(`${id} update Nick Name`, (err: any, data: string) => {
+                if (err) console.log(err);
+                if (data && JSON.parse(data)?.length >= 10) {
+                    return res.status(200).json(JSON.parse(data));
                 } else {
                     next();
                 }
