@@ -272,6 +272,24 @@ class PeopleService {
 
                     console.log(data, id_user, id_fr);
                     if (data[0]._options.isNewRecord && id_user && id_fr) {
+                        const fl = await db.follows.findOrCreate({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id_user, id_followed: id_fr },
+                                    { id_following: id_fr, id_followed: id_user },
+                                ],
+                            },
+                            defaults: {
+                                id_following: id_user,
+                                id_followed: id_fr,
+                                flwing: 2,
+                                flwed: 1,
+                                createdAt: date,
+                                updatedAt: date,
+                            },
+                        });
+                        console.log('follow', fl);
+
                         const user = await db.users.findOne({
                             where: { id: id_user },
                             attributes: ['id', 'avatar', 'fullName', 'nickName', 'gender'],
@@ -365,6 +383,7 @@ class PeopleService {
     setConfirm(id: string, id_fr: string, kindOf: string) {
         return new Promise(async (resolve, reject) => {
             try {
+                const date = moment().format('YYYY-MM-DD HH:mm:ss');
                 if (kindOf) {
                     if (kindOf === 'friends') {
                         const res = await db.friends.update(
@@ -373,6 +392,32 @@ class PeopleService {
                             },
                             { where: { idCurrentUser: id_fr, idFriend: id, level: 1 }, raw: true },
                         );
+                        const fl = await db.follows.findOrCreate({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id_fr, id_followed: id },
+                                    { id_following: id, id_followed: id_fr },
+                                ],
+                            },
+                            defaults: {
+                                id_following: id,
+                                id_followed: id_fr,
+                                flwing: 2,
+                                flwed: 1,
+                                createdAt: date,
+                                updatedAt: date,
+                            },
+                        });
+                        if (!fl[0]._options.isNewRecord) {
+                            const flU = await db.follows.update(
+                                { flwed: 2, updatedAt: date },
+                                {
+                                    where: { id_following: id_fr, id_followed: id },
+                                },
+                            );
+                            console.log(fl, 'confirm and follow', flU);
+                        }
+
                         resolve({ ok: res[0], id_fr: id_fr, id: id });
                     }
                 } else {

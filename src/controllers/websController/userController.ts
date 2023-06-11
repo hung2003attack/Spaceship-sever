@@ -141,5 +141,30 @@ class userController {
             console.log(error);
         }
     };
+    follow = async (req: any, res: any) => {
+        try {
+            const id_fl = req.cookies.k_user;
+            const id = req.body.params.id;
+            const follow = req.body.params.follow;
+            const data = await UserServiceSN.follow(id, id_fl, follow);
+            console.log(data, 'nooo');
+
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    Unfollow = async (req: any, res: any) => {
+        try {
+            const id_fl = req.cookies.k_user;
+            const id = req.body.params.id;
+            const Unfollow = req.body.params.unfollow;
+            const data = await UserServiceSN.Unfollow(id, id_fl, Unfollow);
+            console.log(data, 'contr');
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
 }
 export default new userController();

@@ -9,4 +9,6 @@ router.patch('/setAs', userController.setAs);
 router.get('/getNewMes', userController.getNewMes);
 router.get('/delMessage', userController.delMessage);
 router.patch('/changesOne', checkRequest.changeText, userController.changesOne);
+router.patch('/follow', userController.follow);
+router.patch('/Unfollow', userController.Unfollow);
 export default router;

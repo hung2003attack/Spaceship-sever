@@ -22,6 +22,8 @@ module.exports = (
             user.hasOne(models.relatives, { foreignKey: 'id_user', as: 'id_r_user' });
             user.hasOne(models.relatives, { foreignKey: 'id_relative', as: 'id_relative' });
             user.hasOne(models.mores, { foreignKey: 'id_user', as: 'id_m_user' });
+            user.hasOne(models.follows, { foreignKey: 'id_following', as: 'id_flwing' });
+            user.hasOne(models.follows, { foreignKey: 'id_followed', as: 'id_flwed' });
         }
     }
     user.init(

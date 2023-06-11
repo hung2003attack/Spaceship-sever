@@ -1,3 +1,4 @@
+import moment from 'moment';
 import { Promise } from 'mongoose';
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
@@ -39,6 +40,8 @@ class UserService {
                     console.log(mores, Object.keys(mores));
                     const paramsUser = Object.keys(params);
                     const paramsMore = Object.keys(mores);
+                    const attrF = ['idCurrentUser', 'idFriend', 'level', 'createdAt'];
+                    const attrFl = ['id_following', 'id_followed', 'flwing', 'flwed', 'createdAt', 'updatedAt'];
                     const data = await db.users.findOne({
                         where: { id: id_req },
                         attributes: paramsUser,
@@ -53,26 +56,74 @@ class UserService {
                             {
                                 model: db.friends,
                                 where: {
-                                    [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
+                                    idCurrentUser: id,
                                 },
                                 as: 'id_friend',
-                                attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
+                                attributes: attrF,
                                 raw: true,
                                 required: false,
                             },
                             {
                                 model: db.friends,
                                 where: {
-                                    [Op.or]: [{ idCurrentUser: id }, { idFriend: id }],
+                                    idFriend: id,
                                 },
                                 as: 'id_f_user',
-                                attributes: ['idCurrentUser', 'idFriend', 'level', 'createdAt'],
+                                attributes: attrF,
+                                required: false,
+                            },
+                            {
+                                model: db.follows,
+                                where: {
+                                    id_followed: id,
+                                },
+                                as: 'id_flwing',
+                                attributes: attrFl,
+                                required: false,
+                            },
+                            {
+                                model: db.follows,
+                                where: {
+                                    id_following: id,
+                                },
+                                as: 'id_flwed',
+                                attributes: attrFl,
                                 required: false,
                             },
                         ],
                         nest: true,
                         raw: true,
                     });
+                    //find follows then get id
+                    // const fl = await db.users.findAll({
+                    //     include: [
+                    //         {
+                    //             model: db.follows,
+                    //             where: {
+                    //                 [Op.or]: [
+                    //                     { id_following: id, flwing: 2 },
+                    //                     { id_following: id, flwing: 1 },
+                    //                 ],
+                    //             },
+                    //             attributes: attrFl,
+                    //             as: 'id_flwing',
+                    //         },
+                    //         {
+                    //             model: db.follows,
+                    //             where: {
+                    //                 id_followed: id,
+                    //                 flwed: 2,
+                    //             },
+                    //             attributes: attrFl,
+                    //             as: 'id_flwed',
+                    //         },
+                    //     ],
+                    //     attributes: paramsUser,
+                    //     raw: true,
+                    //     nest: true,
+                    // });
+                    // console.log(data, 'sss', fl, 'follow');
+
                     if (data) resolve({ status: 1, data: data });
 
                     resolve({ status: 0 });
@@ -185,6 +236,113 @@ class UserService {
                 console.log('value', value, data);
 
                 resolve(data[0]);
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    follow(id: string, id_fl: string, follow?: string) {
+        return new Promise(async (resolve: any, reject: any) => {
+            try {
+                const date = moment().format('YYYY-MM-DD HH:mm:ss');
+                console.log(date, 'date', follow);
+                let ok = 0;
+                const res = await db.follows.findOrCreate({
+                    where: {
+                        [Op.or]: [
+                            { id_following: id_fl, id_followed: id },
+                            { id_following: id, id_followed: id_fl },
+                        ],
+                    },
+                    defaults: {
+                        id_following: id_fl,
+                        id_followed: id,
+                        flwing: 2,
+                        flwed: 1,
+                        createdAt: date,
+                        updatedAt: date,
+                    },
+                });
+                if (!res[0]._options.isNewRecord) {
+                    if (follow === 'following') {
+                        const flU = await db.follows.update(
+                            { flwing: 2, updatedAt: date },
+                            {
+                                where: { id_following: id_fl, id_followed: id },
+                            },
+                        );
+                        if (flU[0] === 1) ok = 1;
+                    } else if (follow === 'followed') {
+                        if (!res[0]._options.isNewRecord) {
+                            const flU = await db.follows.update(
+                                { flwed: 2, updatedAt: date },
+                                {
+                                    where: { id_following: id, id_followed: id_fl },
+                                },
+                            );
+                            if (flU[0] === 1) ok = 1;
+                        }
+                    }
+                } else {
+                    console.log('oks');
+                    ok = 1;
+                }
+                resolve({ ok, id, id_fl, follow: !follow ? 0 : follow });
+            } catch (error) {
+                reject(error);
+            }
+        });
+    }
+    Unfollow(id: string, id_fl: string, unfollow: string) {
+        return new Promise(async (resolve: any, reject: any) => {
+            try {
+                const date = moment().format('YYYY-MM-DD HH:mm:ss');
+                console.log(date, 'date', unfollow);
+                let ok = 0;
+                const fl = await db.follows.findOne({
+                    where: {
+                        [Op.or]: [
+                            { id_following: id_fl, id_followed: id },
+                            { id_following: id, id_followed: id_fl },
+                        ],
+                    },
+                });
+                console.log(fl, 'flll');
+
+                if (unfollow === 'following') {
+                    if (fl?.dataValues.flwed === 1) {
+                        const dt = await fl.destroy();
+                        if (dt) ok = 1;
+                    } else {
+                        const res = await db.follows.update(
+                            { flwing: 1 },
+                            {
+                                where: {
+                                    [Op.or]: [{ id_following: id_fl, id_followed: id }],
+                                },
+                            },
+                        );
+                        if (res[0] === 1) ok = 1;
+                        console.log(res, unfollow);
+                    }
+                } else {
+                    if (fl?.dataValues.flwing === 1) {
+                        const dt = await fl.destroy();
+                        if (dt) ok = 1;
+                    } else {
+                        const res = await db.follows.update(
+                            { flwed: 1 },
+                            {
+                                where: {
+                                    [Op.or]: [{ id_following: id, id_followed: id_fl }],
+                                },
+                            },
+                        );
+                        if (res[0] === 1) ok = 1;
+                        console.log(res, unfollow);
+                    }
+                }
+                resolve({ ok, id, id_fl, unfollow });
             } catch (error) {
                 reject(error);
             }
