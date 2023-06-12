@@ -94,36 +94,67 @@ class UserService {
                         nest: true,
                         raw: true,
                     });
-                    //find follows then get id
-                    // const fl = await db.users.findAll({
-                    //     include: [
-                    //         {
-                    //             model: db.follows,
-                    //             where: {
-                    //                 [Op.or]: [
-                    //                     { id_following: id, flwing: 2 },
-                    //                     { id_following: id, flwing: 1 },
-                    //                 ],
-                    //             },
-                    //             attributes: attrFl,
-                    //             as: 'id_flwing',
-                    //         },
-                    //         {
-                    //             model: db.follows,
-                    //             where: {
-                    //                 id_followed: id,
-                    //                 flwed: 2,
-                    //             },
-                    //             attributes: attrFl,
-                    //             as: 'id_flwed',
-                    //         },
-                    //     ],
-                    //     attributes: paramsUser,
-                    //     raw: true,
-                    //     nest: true,
-                    // });
-                    // console.log(data, 'sss', fl, 'follow');
+                    const id_flwi = await db.follows
+                        .findAndCountAll({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id, flwing: 2 },
+                                    { id_followed: id, flwed: 2 },
+                                ],
+                            },
+                            attributes: ['id_followed', 'id_following'],
+                            raw: true,
+                        })
+                        .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
+                            return {
+                                count: resl.count,
+                                id_flwing: resl.rows.map((fl) => {
+                                    if (fl.id_followed !== id) {
+                                        return fl.id_followed;
+                                    } else {
+                                        return fl.id_following;
+                                    }
+                                }),
+                            };
+                        });
+                    const id_flwe = await db.follows
+                        .findAndCountAll({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id, flwed: 2 },
+                                    { id_followed: id, flwing: 2 },
+                                ],
+                            },
+                            attributes: ['id_following', 'id_followed'],
+                            raw: true,
+                        })
+                        .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
+                            return {
+                                count: resl.count,
+                                id_flwed: resl.rows.map((fl) => {
+                                    if (fl.id_followed !== id) {
+                                        return fl.id_followed;
+                                    } else {
+                                        return fl.id_following;
+                                    }
+                                }),
+                            };
+                        });
 
+                    const flwing_data = await db.users.findAll({
+                        where: { id: { [Op.in]: id_flwi.id_flwing } },
+                        attributes: ['id', 'avatar', 'fullName', 'gender'],
+                        raw: true,
+                    });
+                    const flwed_data = await db.users.findAll({
+                        where: { id: { [Op.in]: id_flwe.id_flwed } },
+                        attributes: ['id', 'avatar', 'fullName', 'gender'],
+                        raw: true,
+                    });
+                    data.id_m_user.following = id_flwi.count;
+                    data.id_m_user.flwing_data = flwing_data;
+                    data.id_m_user.follow = id_flwe.count;
+                    data.id_m_user.flwed_data = flwed_data;
                     if (data) resolve({ status: 1, data: data });
 
                     resolve({ status: 0 });

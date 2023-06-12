@@ -79,11 +79,37 @@ class peopleController {
         console.log('id_friend', id_friend);
         const data = await peopleServiceSN.setRequest(id, id_friend);
     };
-    getFriendAll = async (req: any, res: any) => {
+    getFriends = async (req: any, res: any) => {
         try {
-            const id: string = req.cookies.k_user;
-            const data = await peopleServiceSN.getFriendAll(id);
-            return res.status(200).json(data);
+            const id = req.cookies.k_user;
+            const offset = req.query.offset;
+            const limit = req.query.limit;
+            const type = req.query.type;
+            const key = id + type + 'getFriends';
+            const key_private: string = id + 'private';
+
+            redisClient.get(key, async (err: any, result: string) => {
+                if (err) console.log(err);
+                if (result) {
+                    console.log('redis 5');
+
+                    return res.status(200).json(JSON.parse(result));
+                } else {
+                    console.log('mysql 5');
+
+                    const data = await peopleServiceSN.getFriends(id, Number(offset), Number(limit), type);
+                    redisClient.set(key, JSON.stringify(data));
+                    return res.status(200).json(data);
+                }
+            });
+            redisClient.lrange(key_private, 0, -1, (err: any, items: string[]) => {
+                if (err) console.log(err);
+                if (!items.includes(key))
+                    redisClient.rpush(key_private, key, (err: any, length: number) => {
+                        if (err) console.log(err);
+                        console.log(`Item added to the list. New length: ${length}`);
+                    });
+            });
         } catch (error) {
             console.log(error, 'getFriendAll');
         }
@@ -173,6 +199,19 @@ class peopleController {
             return res.status(200).json(data);
         } catch (error) {
             console.log(error, 'setConfrim');
+        }
+    };
+    getStrangers = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            const offset = req.query.offset;
+            const limit = req.query.limit;
+            console.log('offset herer', offset, limit);
+            const data: any = await peopleServiceSN.getStrangers(id, Number(offset), Number(limit));
+            console.log('mysql 6');
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(error);
         }
     };
 }
