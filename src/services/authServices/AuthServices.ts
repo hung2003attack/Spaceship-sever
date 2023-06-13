@@ -186,7 +186,7 @@ class AuthServices {
                     const checkP = bcrypt.compareSync(data.password, User.password);
                     return checkP;
                 });
-                if (checkPhoneNumberEmail.length >= 2) {
+                if (checkPhoneNumberEmail.length >= 7) {
                     resolve({ result: 'Create failed', check: 2, acc: checkPhoneNumberEmail.length });
                     return;
                 } else if (checkPassword.includes(true) === true) {

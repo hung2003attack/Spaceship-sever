@@ -94,67 +94,35 @@ class UserService {
                         nest: true,
                         raw: true,
                     });
-                    const id_flwi = await db.follows
-                        .findAndCountAll({
-                            where: {
-                                [Op.or]: [
-                                    { id_following: id, flwing: 2 },
-                                    { id_followed: id, flwed: 2 },
-                                ],
-                            },
-                            attributes: ['id_followed', 'id_following'],
-                            raw: true,
-                        })
-                        .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
-                            return {
-                                count: resl.count,
-                                id_flwing: resl.rows.map((fl) => {
-                                    if (fl.id_followed !== id) {
-                                        return fl.id_followed;
-                                    } else {
-                                        return fl.id_following;
-                                    }
-                                }),
-                            };
-                        });
-                    const id_flwe = await db.follows
-                        .findAndCountAll({
-                            where: {
-                                [Op.or]: [
-                                    { id_following: id, flwed: 2 },
-                                    { id_followed: id, flwing: 2 },
-                                ],
-                            },
-                            attributes: ['id_following', 'id_followed'],
-                            raw: true,
-                        })
-                        .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
-                            return {
-                                count: resl.count,
-                                id_flwed: resl.rows.map((fl) => {
-                                    if (fl.id_followed !== id) {
-                                        return fl.id_followed;
-                                    } else {
-                                        return fl.id_following;
-                                    }
-                                }),
-                            };
-                        });
+                    const count_flwi = await db.follows.count({
+                        where: {
+                            [Op.or]: [
+                                { id_following: id_req, flwing: 2 },
+                                { id_followed: id_req, flwed: 2 },
+                            ],
+                        },
+                    });
 
-                    const flwing_data = await db.users.findAll({
-                        where: { id: { [Op.in]: id_flwi.id_flwing } },
-                        attributes: ['id', 'avatar', 'fullName', 'gender'],
-                        raw: true,
+                    const count_flwe = await db.follows.count({
+                        where: {
+                            [Op.or]: [
+                                { id_following: id_req, flwed: 2 },
+                                { id_followed: id_req, flwing: 2 },
+                            ],
+                        },
                     });
-                    const flwed_data = await db.users.findAll({
-                        where: { id: { [Op.in]: id_flwe.id_flwed } },
-                        attributes: ['id', 'avatar', 'fullName', 'gender'],
-                        raw: true,
+                    const count_friends = await db.friends.count({
+                        where: {
+                            [Op.or]: [
+                                { idCurrentUser: id_req, level: 2 },
+                                { idFriend: id_req, level: 2 },
+                            ],
+                        },
                     });
-                    data.id_m_user.following = id_flwi.count;
-                    data.id_m_user.flwing_data = flwing_data;
-                    data.id_m_user.follow = id_flwe.count;
-                    data.id_m_user.flwed_data = flwed_data;
+                    console.log(count_flwi, count_flwe, 'fl');
+                    data.id_m_user.friends = count_friends;
+                    data.id_m_user.following = count_flwi;
+                    data.id_m_user.follow = count_flwe;
                     if (data) resolve({ status: 1, data: data });
 
                     resolve({ status: 0 });
@@ -163,6 +131,71 @@ class UserService {
                 }
             },
         );
+    }
+    getMore(id: string) {
+        return new Promise(async (resolve: any, reject: (arg0: unknown) => void) => {
+            try {
+                const id_flwi = await db.follows
+                    .findAndCountAll({
+                        where: {
+                            [Op.or]: [
+                                { id_following: id, flwing: 2 },
+                                { id_followed: id, flwed: 2 },
+                            ],
+                        },
+                        attributes: ['id_followed', 'id_following'],
+                        raw: true,
+                    })
+                    .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
+                        return {
+                            count: resl.count,
+                            id_flwing: resl.rows.map((fl) => {
+                                if (fl.id_followed !== id) {
+                                    return fl.id_followed;
+                                } else {
+                                    return fl.id_following;
+                                }
+                            }),
+                        };
+                    });
+                const id_flwe = await db.follows
+                    .findAndCountAll({
+                        where: {
+                            [Op.or]: [
+                                { id_following: id, flwed: 2 },
+                                { id_followed: id, flwing: 2 },
+                            ],
+                        },
+                        attributes: ['id_following', 'id_followed'],
+                        raw: true,
+                    })
+                    .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
+                        return {
+                            count: resl.count,
+                            id_flwed: resl.rows.map((fl) => {
+                                if (fl.id_followed !== id) {
+                                    return fl.id_followed;
+                                } else {
+                                    return fl.id_following;
+                                }
+                            }),
+                        };
+                    });
+
+                const flwing_data = await db.users.findAll({
+                    where: { id: { [Op.in]: id_flwi.id_flwing } },
+                    attributes: ['id', 'avatar', 'fullName', 'gender'],
+                    raw: true,
+                });
+                const flwed_data = await db.users.findAll({
+                    where: { id: { [Op.in]: id_flwe.id_flwed } },
+                    attributes: ['id', 'avatar', 'fullName', 'gender'],
+                    raw: true,
+                });
+            } catch (error) {
+                reject(error);
+            }
+        });
     }
     getByName(name: string, params: PropsParams) {
         return new Promise(

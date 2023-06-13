@@ -19,8 +19,6 @@ module.exports = (sequelize: any, DataTypes: { STRING: any; INTEGER: any; DATE: 
             love: DataTypes.INTEGER,
             star: DataTypes.INTEGER,
             visit: DataTypes.INTEGER,
-            follow: DataTypes.INTEGER,
-            following: DataTypes.INTEGER,
             createdAt: DataTypes.DATE,
         },
         {

@@ -9,6 +9,7 @@ class userController {
             const mores = req.body.mores;
             const personal = req.body.personal;
             const userData: any = await UserServiceSN.getById(id, id_req, req.body.params, mores, personal);
+            console.log(userData);
             if (userData.status === 1) return res.status(200).json(userData.data);
             return res.status(500).json({ mess: 'Failed!', status: 0 });
         } catch (error) {

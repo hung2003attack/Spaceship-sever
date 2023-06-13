@@ -387,6 +387,7 @@ class PeopleService {
                                     { idFriend: id, level: 2 },
                                 ],
                             },
+
                             attributes: ['idFriend', 'idCurrentUser'],
                             raw: true,
                         })
@@ -395,6 +396,7 @@ class PeopleService {
                                 f.idFriend !== id ? f.idFriend : f.idCurrentUser !== id ? f.idCurrentUser : '',
                             ),
                         );
+                    console.log(friends_id, 'friends');
 
                     const dataFriends = await db.users.findAll({
                         where: { id: { [Op.in]: friends_id } },
@@ -489,7 +491,7 @@ class PeopleService {
             }
         });
     }
-    getStrangers(id: string, offset: number, limit: number) {
+    getStrangers(id: string, limit: number, ids: string[]) {
         return new Promise(async (resolve, reject) => {
             try {
                 const friends_id = await db.friends
@@ -522,12 +524,13 @@ class PeopleService {
                     );
                 const attributes = ['id', 'avatar', 'fullName', 'nickName', 'gender', 'birthday'];
 
-                const all_id = friends_id.concat(relatives_id);
+                const both_id = friends_id.concat(relatives_id);
+                const all_id = both_id.concat(ids ?? []);
                 all_id.push(id);
+
                 const dataStrangers = await db.users.findAll({
                     where: { id: { [Op.notIn]: all_id } },
                     order: db.sequelize.random(),
-                    offset: offset,
                     limit: limit,
                     include: [
                         {
