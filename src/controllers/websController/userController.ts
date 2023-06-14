@@ -95,7 +95,8 @@ class userController {
     changesOne = async (req: any, res: any) => {
         try {
             const dateTime = moment().format('HH:mm:ss DD-MM-YYYY');
-            const id = req.cookies.k_user;
+            const id = req.body.params.id;
+            const id_req = req.cookies.k_user;
             const params = req.body.params.params;
             const value = req.body.params.value;
             const redisClient = req.redisClient;
@@ -105,7 +106,7 @@ class userController {
                 redisClient.get(fullName, async (err: any, data: string) => {
                     if (err) console.log(err);
                     if (!data) {
-                        const data: any = await UserServiceSN.changesOne(id, value, params);
+                        const data: any = await UserServiceSN.changesOne(id, id_req, value, params);
                         console.log('data full name', data);
 
                         if (data === 1) {
@@ -121,7 +122,7 @@ class userController {
                 const nickName = `${id} update Nick Name`;
                 redisClient.get(nickName, async (err: any, datas: string) => {
                     if (err) console.log(err);
-                    const data: any = await UserServiceSN.changesOne(id, value, params);
+                    const data: any = await UserServiceSN.changesOne(id, id_req, value, params);
                     console.log('data nick name', data);
 
                     if (datas) {
@@ -135,7 +136,7 @@ class userController {
                     return res.status(200).json(data);
                 });
             } else {
-                const data: any = await UserServiceSN.changesOne(id, value, params);
+                const data: any = await UserServiceSN.changesOne(id, id_req, value, params);
                 return res.status(200).json(data);
             }
         } catch (error) {
@@ -162,6 +163,18 @@ class userController {
             const Unfollow = req.body.params.unfollow;
             const data = await UserServiceSN.Unfollow(id, id_fl, Unfollow);
             console.log(data, 'contr');
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    getMore = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            const limit = req.query.limit;
+            const offset = req.query.offset;
+            const data = await UserServiceSN.getMore(id, Number(offset), Number(limit));
+            console.log(data, 'more');
             return res.status(200).json(data);
         } catch (error) {
             console.log(error);

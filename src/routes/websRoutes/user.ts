@@ -11,4 +11,5 @@ router.get('/delMessage', userController.delMessage);
 router.patch('/changesOne', checkRequest.changeText, userController.changesOne);
 router.patch('/follow', userController.follow);
 router.patch('/Unfollow', userController.Unfollow);
+router.get('/getMore', userController.getMore);
 export default router;

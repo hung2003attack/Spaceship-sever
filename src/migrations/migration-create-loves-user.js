@@ -2,7 +2,7 @@
 /** @type {import('sequelize-cli').Migration} */
 module.exports = {
     async up(queryInterface, Sequelize) {
-        await queryInterface.createTable('mores', {
+        await queryInterface.createTable('loves', {
             id: {
                 allowNull: false,
                 autoIncrement: true,
@@ -11,24 +11,11 @@ module.exports = {
             },
             id_user: {
                 type: Sequelize.STRING(50),
-                unique: true,
+                allowNull: false,
             },
-            position: {
-                type: Sequelize.STRING('20'),
-                defaultValue: 'user'
-            },
-            love: {
-                type: Sequelize.INTEGER(10),
-                defaultValue: 0
-
-            },
-            star: {
-                type: Sequelize.INTEGER(10),
-                defaultValue: 0
-            },
-            visit: {
-                type: Sequelize.INTEGER(10),
-                defaultValue: 0
+            id_loved: {
+                type: Sequelize.STRING(50),
+                allowNull: false,
             },
             createdAt: {
                 type: Sequelize.DATE,
@@ -38,11 +25,13 @@ module.exports = {
             }
         })
             .then(() => {
-                const sql = `ALTER TABLE mores ADD CONSTRAINT FRK_mores_users FOREIGN KEY (id_user) REFERENCES users(id)`;
+                const sql = `ALTER TABLE loves ADD CONSTRAINT FRK_loves_users FOREIGN KEY (id_user) REFERENCES users(id)`;
+                const sqls = `ALTER TABLE loves ADD CONSTRAINT FRK_lovess_users FOREIGN KEY (id_loved) REFERENCES users(id)`;
+                queryInterface.sequelize.query(sqls, { raw: true });
                 return queryInterface.sequelize.query(sql, { raw: true });
             })
     },
     async down(queryInterface, Sequelize) {
-        await queryInterface.dropTable('mores');
+        await queryInterface.dropTable('loves');
     }
 };

@@ -23,9 +23,10 @@ interface PropsParams {
     sn?: string;
     l?: string;
     w?: string;
+    more?: PropsParamsMores;
 }
 interface PropsParamsMores {
-    position: string;
+    position?: string;
     star?: number;
     love?: number;
     visit?: number;
@@ -132,66 +133,68 @@ class UserService {
             },
         );
     }
-    getMore(id: string) {
+    getMore(id: string, offset: number, limit: number) {
         return new Promise(async (resolve: any, reject: (arg0: unknown) => void) => {
             try {
+                console.log(offset, limit);
+
                 const id_flwi = await db.follows
-                    .findAndCountAll({
+                    .findAll({
                         where: {
                             [Op.or]: [
                                 { id_following: id, flwing: 2 },
                                 { id_followed: id, flwed: 2 },
                             ],
                         },
+                        offset: offset,
+                        limit: limit,
                         attributes: ['id_followed', 'id_following'],
                         raw: true,
                     })
-                    .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
-                        return {
-                            count: resl.count,
-                            id_flwing: resl.rows.map((fl) => {
-                                if (fl.id_followed !== id) {
-                                    return fl.id_followed;
-                                } else {
-                                    return fl.id_following;
-                                }
-                            }),
-                        };
+                    .then((resl: { id_following: string; id_followed: string }[]) => {
+                        return resl.map((fl) => {
+                            if (fl.id_followed !== id) {
+                                return fl.id_followed;
+                            } else {
+                                return fl.id_following;
+                            }
+                        });
                     });
                 const id_flwe = await db.follows
-                    .findAndCountAll({
+                    .findAll({
                         where: {
                             [Op.or]: [
                                 { id_following: id, flwed: 2 },
                                 { id_followed: id, flwing: 2 },
                             ],
                         },
+                        offset: offset,
+                        limit: limit,
                         attributes: ['id_following', 'id_followed'],
                         raw: true,
                     })
-                    .then((resl: { count: number; rows: { id_following: string; id_followed: string }[] }) => {
-                        return {
-                            count: resl.count,
-                            id_flwed: resl.rows.map((fl) => {
-                                if (fl.id_followed !== id) {
-                                    return fl.id_followed;
-                                } else {
-                                    return fl.id_following;
-                                }
-                            }),
-                        };
+                    .then((resl: { id_following: string; id_followed: string }[]) => {
+                        return resl.map((fl) => {
+                            if (fl.id_followed !== id) {
+                                return fl.id_followed;
+                            } else {
+                                return fl.id_following;
+                            }
+                        });
                     });
+                console.log('i don t know');
 
                 const flwing_data = await db.users.findAll({
-                    where: { id: { [Op.in]: id_flwi.id_flwing } },
+                    where: { id: { [Op.in]: id_flwi } },
                     attributes: ['id', 'avatar', 'fullName', 'gender'],
                     raw: true,
                 });
                 const flwed_data = await db.users.findAll({
-                    where: { id: { [Op.in]: id_flwe.id_flwed } },
+                    where: { id: { [Op.in]: id_flwe } },
                     attributes: ['id', 'avatar', 'fullName', 'gender'],
                     raw: true,
                 });
+                resolve({ following: flwing_data, followed: flwed_data });
             } catch (error) {
                 reject(error);
             }
@@ -283,23 +286,54 @@ class UserService {
             }
         });
     }
-    changesOne(id: string, value: string, params: PropsParams) {
+    changesOne(id: string, id_req: string, value: string, params: PropsParams) {
         return new Promise(async (resolve: (arg0: number) => void, reject: (arg0: unknown) => void) => {
             try {
                 const at: any = params.avatar;
                 const att: any = params.background;
                 const name = params.fullName;
                 const nickName = params.nickName;
-                if (name || nickName) if (value.length > 30) resolve(0);
-                const data = await db.users.update(
-                    { [`${at || att || name || nickName}`]: value },
-                    {
-                        where: { id: id },
-                    },
-                );
-                console.log('value', value, data);
+                const more = params.more;
+                const date = moment().format('YYYY-MM-DD HH:mm:ss');
 
-                resolve(data[0]);
+                if (more) {
+                    const love = more.love;
+                    console.log('more', more);
+                    const resLoves = await db.loves.findOrCreate({
+                        where: {
+                            [Op.and]: [{ id_user: id }, { id_loved: id_req }],
+                        },
+                        defaults: {
+                            id_user: id,
+                            id_loved: id_req,
+                            createdAt: date,
+                        },
+                    });
+                    const data = await db.mores
+                        .findOne({ where: { id_user: id } })
+                        .then((res: any) => {
+                            console.log(res, 'res mores');
+                            if (res) {
+                                res.update({
+                                    [`${love}`]: (res.love += 1),
+                                });
+                            }
+                        })
+                        .catch((error: any) => {
+                            // handle the error case
+                            console.error(error);
+                        });
+                } else {
+                    if (name || nickName) if (value.length > 30) resolve(0);
+                    const data = await db.users.update(
+                        { [`${at || att || name || nickName}`]: value },
+                        {
+                            where: { id: id },
+                        },
+                    );
+                    console.log('value', value, data);
+                    resolve(data[0]);
+                }
             } catch (error) {
                 reject(error);
             }
