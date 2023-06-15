@@ -429,7 +429,7 @@ class PeopleService {
                         });
                         if (data) {
                             await data.destroy();
-                            resolve(data);
+                            resolve(true);
                         }
                         resolve(false);
                     } else {

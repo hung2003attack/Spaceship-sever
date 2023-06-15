@@ -16,7 +16,6 @@ module.exports = (sequelize: any, DataTypes: { STRING: any; INTEGER: any; DATE: 
         {
             id_user: DataTypes.STRING,
             position: DataTypes.STRING,
-            love: DataTypes.INTEGER,
             star: DataTypes.INTEGER,
             visit: DataTypes.INTEGER,
             createdAt: DataTypes.DATE,

@@ -27,14 +27,14 @@ interface PropsParams {
 }
 interface PropsParamsMores {
     position?: string;
-    star?: number;
-    love?: number;
-    visit?: number;
-    follow?: number;
-    following?: number;
+    star?: string;
+    love?: string;
+    visit?: string;
+    follow?: string;
+    following?: string;
 }
 class UserService {
-    getById(id: string, id_req: string, params: PropsParams, mores: PropsParamsMores, personal?: string) {
+    getById(id: string, id_req: string, params: PropsParams, mores: PropsParamsMores, first?: string) {
         return new Promise(
             async (resolve: (arg0: { status: number; data?: any }) => void, reject: (arg0: unknown) => void) => {
                 try {
@@ -43,88 +43,108 @@ class UserService {
                     const paramsMore = Object.keys(mores);
                     const attrF = ['idCurrentUser', 'idFriend', 'level', 'createdAt'];
                     const attrFl = ['id_following', 'id_followed', 'flwing', 'flwed', 'createdAt', 'updatedAt'];
-                    const data = await db.users.findOne({
-                        where: { id: id_req },
-                        attributes: paramsUser,
-                        include: [
-                            {
-                                model: db.mores,
-                                where: { id_user: id_req },
-                                attributes: paramsMore,
-                                as: 'id_m_user',
-                                require: true,
-                            },
-                            {
-                                model: db.friends,
-                                where: {
-                                    idCurrentUser: id,
+                    if (first) {
+                        const data = await db.users.findOne({
+                            where: { id: id_req },
+                            attributes: paramsUser,
+                            raw: true,
+                        });
+                        if (data) resolve({ status: 1, data: data });
+                    } else {
+                        const data = await db.users.findOne({
+                            where: { id: id_req },
+                            attributes: paramsUser,
+                            include: [
+                                {
+                                    model: db.mores,
+                                    where: { id_user: id_req },
+                                    attributes: paramsMore,
+                                    as: 'id_m_user',
+                                    require: true,
                                 },
-                                as: 'id_friend',
-                                attributes: attrF,
-                                raw: true,
-                                required: false,
-                            },
-                            {
-                                model: db.friends,
-                                where: {
-                                    idFriend: id,
+                                {
+                                    model: db.friends,
+                                    where: {
+                                        idCurrentUser: id,
+                                    },
+                                    as: 'id_friend',
+                                    attributes: attrF,
+                                    raw: true,
+                                    required: false,
                                 },
-                                as: 'id_f_user',
-                                attributes: attrF,
-                                required: false,
-                            },
-                            {
-                                model: db.follows,
-                                where: {
-                                    id_followed: id,
+                                {
+                                    model: db.friends,
+                                    where: {
+                                        idFriend: id,
+                                    },
+                                    as: 'id_f_user',
+                                    attributes: attrF,
+                                    required: false,
                                 },
-                                as: 'id_flwing',
-                                attributes: attrFl,
-                                required: false,
-                            },
-                            {
-                                model: db.follows,
-                                where: {
-                                    id_following: id,
+                                {
+                                    model: db.follows,
+                                    where: {
+                                        id_followed: id,
+                                    },
+                                    as: 'id_flwing',
+                                    attributes: attrFl,
+                                    required: false,
                                 },
-                                as: 'id_flwed',
-                                attributes: attrFl,
-                                required: false,
-                            },
-                        ],
-                        nest: true,
-                        raw: true,
-                    });
-                    const count_flwi = await db.follows.count({
-                        where: {
-                            [Op.or]: [
-                                { id_following: id_req, flwing: 2 },
-                                { id_followed: id_req, flwed: 2 },
+                                {
+                                    model: db.follows,
+                                    where: {
+                                        id_following: id,
+                                    },
+                                    as: 'id_flwed',
+                                    attributes: attrFl,
+                                    required: false,
+                                },
+                                {
+                                    model: db.loves,
+                                    where: {
+                                        id_loved: id,
+                                    },
+                                    as: 'id_loved_user',
+                                    attributes: ['id_loved'],
+                                    required: false,
+                                },
                             ],
-                        },
-                    });
+                            nest: true,
+                            raw: true,
+                        });
+                        const count_flwi = await db.follows.count({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id_req, flwing: 2 },
+                                    { id_followed: id_req, flwed: 2 },
+                                ],
+                            },
+                        });
 
-                    const count_flwe = await db.follows.count({
-                        where: {
-                            [Op.or]: [
-                                { id_following: id_req, flwed: 2 },
-                                { id_followed: id_req, flwing: 2 },
-                            ],
-                        },
-                    });
-                    const count_friends = await db.friends.count({
-                        where: {
-                            [Op.or]: [
-                                { idCurrentUser: id_req, level: 2 },
-                                { idFriend: id_req, level: 2 },
-                            ],
-                        },
-                    });
-                    console.log(count_flwi, count_flwe, 'fl');
-                    data.id_m_user.friends = count_friends;
-                    data.id_m_user.following = count_flwi;
-                    data.id_m_user.follow = count_flwe;
-                    if (data) resolve({ status: 1, data: data });
+                        const count_flwe = await db.follows.count({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id_req, flwed: 2 },
+                                    { id_followed: id_req, flwing: 2 },
+                                ],
+                            },
+                        });
+                        const count_friends = await db.friends.count({
+                            where: {
+                                [Op.or]: [
+                                    { idCurrentUser: id_req, level: 2 },
+                                    { idFriend: id_req, level: 2 },
+                                ],
+                            },
+                        });
+                        const count_loves = await db.loves.count({ where: { id_user: id_req } });
+                        console.log('loves', count_loves);
+                        data.id_m_user.love = count_loves;
+                        data.id_m_user.friends = count_friends;
+                        data.id_m_user.following = count_flwi;
+                        data.id_m_user.follow = count_flwe;
+                        if (data) resolve({ status: 1, data: data });
+                    }
 
                     resolve({ status: 0 });
                 } catch (error) {
@@ -298,31 +318,27 @@ class UserService {
 
                 if (more) {
                     const love = more.love;
-                    console.log('more', more);
-                    const resLoves = await db.loves.findOrCreate({
-                        where: {
-                            [Op.and]: [{ id_user: id }, { id_loved: id_req }],
-                        },
-                        defaults: {
-                            id_user: id,
-                            id_loved: id_req,
-                            createdAt: date,
-                        },
-                    });
-                    const data = await db.mores
-                        .findOne({ where: { id_user: id } })
-                        .then((res: any) => {
-                            console.log(res, 'res mores');
-                            if (res) {
-                                res.update({
-                                    [`${love}`]: (res.love += 1),
-                                });
-                            }
-                        })
-                        .catch((error: any) => {
-                            // handle the error case
-                            console.error(error);
+                    if (love === 'love') {
+                        const resLoves = await db.loves.findOrCreate({
+                            where: {
+                                [Op.and]: [{ id_user: id }, { id_loved: id_req }],
+                            },
+                            defaults: {
+                                id_user: id,
+                                id_loved: id_req,
+                                createdAt: date,
+                            },
                         });
+                    } else if (love === 'unlove') {
+                        const resLoves = await db.loves.destroy({
+                            where: {
+                                [Op.and]: [{ id_user: id }, { id_loved: id_req }],
+                            },
+                        });
+                    }
+                    const count_loves = await db.loves.count({ where: { id_user: id } });
+                    console.log(count_loves, 'count_loves ');
+                    resolve(count_loves);
                 } else {
                     if (name || nickName) if (value.length > 30) resolve(0);
                     const data = await db.users.update(
@@ -385,7 +401,15 @@ class UserService {
                     console.log('oks');
                     ok = 1;
                 }
-                resolve({ ok, id, id_fl, follow: !follow ? 0 : follow });
+                const count_flwe = await db.follows.count({
+                    where: {
+                        [Op.or]: [
+                            { id_following: id, flwed: 2 },
+                            { id_followed: id, flwing: 2 },
+                        ],
+                    },
+                });
+                resolve({ ok, id, id_fl, count_flwe, follow: !follow ? 0 : follow });
             } catch (error) {
                 reject(error);
             }
@@ -440,7 +464,15 @@ class UserService {
                         console.log(res, unfollow);
                     }
                 }
-                resolve({ ok, id, id_fl, unfollow });
+                const count_flwe = await db.follows.count({
+                    where: {
+                        [Op.or]: [
+                            { id_following: id, flwed: 2 },
+                            { id_followed: id, flwing: 2 },
+                        ],
+                    },
+                });
+                resolve({ ok, id, id_fl, count_flwe, unfollow });
             } catch (error) {
                 reject(error);
             }

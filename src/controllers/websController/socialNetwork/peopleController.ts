@@ -43,12 +43,7 @@ class peopleController {
             const key_user: string = id + 'people';
             const key_friend: string = id_friend + 'people';
             const io = res.io;
-            redisClient.del(key_user, (err: any, data: string) => {
-                if (err) console.log('Del Value faild!', err);
-            });
-            redisClient.del(key_friend, (err: any, data: string) => {
-                if (err) console.log('Del Value faild!', err);
-            });
+
             const data: any = await peopleServiceSN.setFriend(id, id_friend);
 
             redisClient.get(`${data.id_friend} message`, (err: any, rs: string) => {

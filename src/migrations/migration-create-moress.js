@@ -17,11 +17,7 @@ module.exports = {
                 type: Sequelize.STRING('20'),
                 defaultValue: 'user'
             },
-            love: {
-                type: Sequelize.INTEGER(10),
-                defaultValue: 0
 
-            },
             star: {
                 type: Sequelize.INTEGER(10),
                 defaultValue: 0
