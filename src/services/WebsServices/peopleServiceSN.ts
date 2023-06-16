@@ -244,7 +244,7 @@ class PeopleService {
             }
         });
     }
-    setFriend(id: string, id_friend: string) {
+    setFriend(id: string, id_friend: string, per: string) {
         return new Promise(async (resolve, reject) => {
             try {
                 console.log('data here');
@@ -298,6 +298,25 @@ class PeopleService {
                         user.status = 1;
                         user.id_f_user;
                         user.id_f_user = { createdAt: data[0].dataValues.createdAt };
+                        if (per === 'yes') {
+                            const count_flwe = await db.follows.count({
+                                where: {
+                                    [Op.or]: [
+                                        { id_following: id_fr, flwed: 2 },
+                                        { id_followed: id_fr, flwing: 2 },
+                                    ],
+                                },
+                            });
+                            resolve({
+                                id_friend: id_fr,
+                                user,
+                                data: data[0],
+                                quantity: 1,
+                                count_flwe,
+                                id: id_fr,
+                                id_fl: id,
+                            });
+                        }
                         resolve({
                             id_friend: id_fr,
                             user,
@@ -414,7 +433,7 @@ class PeopleService {
         });
     }
     // {idCurrentUser: id_user, idFriend: id_req},{idCurrentUser: id_req,idFriend: id_user}
-    delete(id_user: string, id_req: string, kindOf?: string) {
+    delete(id_user: string, id_req: string, kindOf?: string, per?: string) {
         return new Promise(async (resolve, reject) => {
             try {
                 if (kindOf) {
@@ -427,10 +446,32 @@ class PeopleService {
                                 ],
                             },
                         });
+                        const follow = await db.follows.destroy({
+                            where: {
+                                [Op.or]: [
+                                    { id_following: id_user, id_followed: id_req },
+                                    { id_following: id_req, id_followed: id_user },
+                                ],
+                            },
+                        });
+                        console.log(follow, data, 'delete follow');
+
                         if (data) {
                             await data.destroy();
-                            resolve(true);
+                            if (per === 'yes') {
+                                const count_flwe = await db.follows.count({
+                                    where: {
+                                        [Op.or]: [
+                                            { id_following: id_req, flwed: 2 },
+                                            { id_followed: id_req, flwing: 2 },
+                                        ],
+                                    },
+                                });
+                                resolve({ ok: data, count_flwe });
+                            }
+                            resolve({ ok: data });
                         }
+
                         resolve(false);
                     } else {
                         console.log('relative', kindOf);
@@ -480,8 +521,15 @@ class PeopleService {
                             );
                             console.log(fl, 'confirm and follow', flU);
                         }
-
-                        resolve({ ok: res[0], id_fr: id_fr, id: id });
+                        const count_friends = await db.friends.count({
+                            where: {
+                                [Op.or]: [
+                                    { idCurrentUser: id_fr, level: 2 },
+                                    { idFriend: id_fr, level: 2 },
+                                ],
+                            },
+                        });
+                        resolve({ ok: res[0], id_fr: id_fr, id: id, count_friends });
                     }
                 } else {
                     console.log('relatives');

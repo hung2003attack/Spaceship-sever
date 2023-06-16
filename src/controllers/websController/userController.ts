@@ -18,8 +18,9 @@ class userController {
     };
     getByName = async (req: any, res: any) => {
         try {
+            const id = req.cookies.k_user;
             const name: string = req.body.name;
-            const data: any = await UserServiceSN.getByName(name, req.body.params);
+            const data: any = await UserServiceSN.getByName(id, name, req.body.params);
             if (data.status === 1) return res.status(200).json(data.data);
             return res.status(500).json({ mess: 'Failed!' });
         } catch (error) {

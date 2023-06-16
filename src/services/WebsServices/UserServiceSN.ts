@@ -220,12 +220,13 @@ class UserService {
             }
         });
     }
-    getByName(name: string, params: PropsParams) {
+    getByName(id: string, name: string, params: PropsParams) {
         return new Promise(
             async (resolve: (arg0: { status: number; data?: any }) => void, reject: (arg0: unknown) => void) => {
                 try {
                     const data = await db.users.findAll({
                         where: {
+                            id: { [Op.notIn]: [id] },
                             fullName: {
                                 [Op.like]: `%${name}%`,
                             },

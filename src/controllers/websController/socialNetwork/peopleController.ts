@@ -43,8 +43,8 @@ class peopleController {
             const key_user: string = id + 'people';
             const key_friend: string = id_friend + 'people';
             const io = res.io;
-
-            const data: any = await peopleServiceSN.setFriend(id, id_friend);
+            const per = req.body.params.per;
+            const data: any = await peopleServiceSN.setFriend(id, id_friend, per);
 
             redisClient.get(`${data.id_friend} message`, (err: any, rs: string) => {
                 if (err) console.log(err);
@@ -95,55 +95,49 @@ class peopleController {
             const kindOf = req.body.params.kindOf;
             const redisClient = req.redisClient;
             const io = res.io;
-            const data: any = await peopleServiceSN.delete(id, id_req, kindOf);
+            const per = req.body.params.per;
+            const data: any = await peopleServiceSN.delete(id, id_req, kindOf, per);
             console.log(data, 'delete', 'id_req', id_req);
 
             if (data) {
-                if (data.idFriend)
+                if (data.ok?.idFriend)
                     io.emit(
-                        `Del request others?id=${data.idFriend}`,
+                        `Del request others?id=${data.ok?.idFriend}`,
                         JSON.stringify({
                             data: {
                                 id: 106,
-                                idCurrentUser: data.idCurrentUser,
+                                idCurrentUser: data.ok?.idCurrentUser,
                                 idFriend: null,
                                 createdAt: null,
                             },
                         }),
                     );
                 io.emit(
-                    `Del request others?id=${data.idCurrentUser}`,
+                    `Del request others?id=${data.ok?.idCurrentUser}`,
                     JSON.stringify({
                         data: {
                             id: 106,
-                            idCurrentUser: data.idFriend,
+                            idCurrentUser: data.ok?.idFriend,
                             idFriend: null,
                             createdAt: null,
                         },
                     }),
                 );
-                redisClient.get(`${data.idFriend} message`, (err: any, rs: string) => {
+                redisClient.get(`${data.ok?.idFriend} message`, (err: any, rs: string) => {
                     if (err) console.log(err);
                     if (data && rs && JSON.parse(rs).quantity > 0) {
                         redisClient.set(
-                            `${data.idFriend} message`,
+                            `${data.ok?.idFriend} message`,
                             JSON.stringify({ quantity: JSON.parse(rs).quantity - 1 }),
                         );
                     }
                 });
-                redisClient.del(id + 'people', (err: any) => {
-                    if (err) console.log('Del Value faild!', err);
-                });
-                redisClient.del(id_req + 'people', (err: any) => {
-                    if (err) console.log('Del Value faild!', err);
-                    io.emit(`Delete request friends or relatives${data.idFriend}`, data.idCurrentUser);
-                });
             }
-            redisClient.get(`${data.idFriend} message`, (err: any, rs: string) => {
+            redisClient.get(`${data.ok?.idFriend} message`, (err: any, rs: string) => {
                 if (err) console.log(err);
-                if (rs) data.quantity = JSON.parse(rs).quantity;
+                if (rs) data.ok.quantity = JSON.parse(rs).quantity;
             });
-            redisClient.del(`${data.idFriend} user_message`, (err: any) => {
+            redisClient.del(`${data.ok?.idFriend} user_message`, (err: any) => {
                 if (err) console.log('Del Value faild!', err);
             });
             return res.status(200).json(data);
