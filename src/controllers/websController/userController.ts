@@ -20,7 +20,9 @@ class userController {
         try {
             const id = req.cookies.k_user;
             const name: string = req.body.name;
-            const data: any = await UserServiceSN.getByName(id, name, req.body.params);
+            const searchMore: string = req.body.searchMore;
+            const cateMore: string = req.body.cateMore;
+            const data: any = await UserServiceSN.getByName(id, name, cateMore, searchMore, req.body.params);
             if (data.status === 1) return res.status(200).json(data.data);
             return res.status(500).json({ mess: 'Failed!' });
         } catch (error) {

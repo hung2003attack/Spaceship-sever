@@ -220,21 +220,46 @@ class UserService {
             }
         });
     }
-    getByName(id: string, name: string, params: PropsParams) {
+    getByName(id: string, name: string, cateMore: string, searchMore: string, params: PropsParams) {
         return new Promise(
             async (resolve: (arg0: { status: number; data?: any }) => void, reject: (arg0: unknown) => void) => {
                 try {
-                    const data = await db.users.findAll({
-                        where: {
-                            id: { [Op.notIn]: [id] },
-                            fullName: {
-                                [Op.like]: `%${name}%`,
+                    console.log({ [`${cateMore}`]: searchMore });
+                    if (cateMore && searchMore) {
+                        const data = await db.users.findAll({
+                            where: {
+                                id: { [Op.notIn]: [id] },
+                                [Op.and]: [
+                                    {
+                                        fullName: {
+                                            [Op.like]: `%${name}%`,
+                                        },
+                                    },
+                                    {
+                                        [`${cateMore}`]: {
+                                            [Op.like]: `%${searchMore}%`,
+                                        },
+                                    },
+                                ],
                             },
-                        },
-                        attributes: Object.keys(params),
-                        raw: true,
-                    });
-                    if (data) resolve({ status: 1, data });
+                            attributes: Object.keys(params),
+                            raw: true,
+                        });
+                        if (data) resolve({ status: 1, data });
+                    } else {
+                        const data = await db.users.findAll({
+                            where: {
+                                id: { [Op.notIn]: [id] },
+                                fullName: {
+                                    [Op.like]: `%${name}%`,
+                                },
+                            },
+                            attributes: Object.keys(params),
+                            raw: true,
+                        });
+                        if (data) resolve({ status: 1, data });
+                    }
+
                     resolve({ status: 0 });
                 } catch (error) {
                     reject(error);
