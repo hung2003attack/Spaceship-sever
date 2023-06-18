@@ -232,12 +232,12 @@ class UserService {
                                 [Op.and]: [
                                     {
                                         fullName: {
-                                            [Op.like]: `%${name}%`,
+                                            [Op.like]: `${name}%`,
                                         },
                                     },
                                     {
                                         [`${cateMore}`]: {
-                                            [Op.like]: `%${searchMore}%`,
+                                            [Op.like]: `${searchMore}%`,
                                         },
                                     },
                                 ],

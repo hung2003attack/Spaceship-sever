@@ -183,5 +183,46 @@ class userController {
             console.log(error);
         }
     };
+    setHistory = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            const history = req.body.params.data;
+            console.log(history, 'more');
+            redisClient.get(id + 'history_search', (err: any, results: string) => {
+                if (err) console.log(err);
+                if (results) {
+                    const data = JSON.parse(results);
+                    let check = false;
+                    const newData = data.filter((v: any) => v.id !== history.id);
+                    newData.push(history);
+                    console.log(newData, 'ooo');
+
+                    redisClient.set(id + 'history_search', JSON.stringify(newData));
+                } else {
+                    redisClient.set(id + 'history_search', JSON.stringify([history]));
+                }
+            });
+            return res.status(200).json(true);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    getHistory = (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            redisClient.get(id + 'history_search', (err: any, results: string) => {
+                const newData = [];
+                if (err) console.log(err);
+                if (results) {
+                    for (let i = JSON.parse(results).length - 1; i >= 0; i--) {
+                        newData.push(JSON.parse(results)[i]);
+                    }
+                }
+                return res.status(200).json(newData);
+            });
+        } catch (error) {
+            console.log(error);
+        }
+    };
 }
 export default new userController();
