@@ -1,10 +1,9 @@
 import moment from 'moment';
-import { io } from '../..';
 import { v4 as primaryKey } from 'uuid';
 moment.locale('vi');
 const Sequelize = require('sequelize');
 const Op = Sequelize.Op;
-const db = require('../../models');
+const db = require('../../../models');
 
 class PeopleService {
     getPeopleAll(id: string) {

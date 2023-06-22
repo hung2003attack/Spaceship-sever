@@ -1,5 +1,5 @@
 import { redisClient } from '../../..';
-import peopleServiceSN from '../../../services/WebsServices/peopleServiceSN';
+import peopleServiceSN from '../../../services/WebsServices/SocialNetwork/peopleServiceSN';
 
 class peopleController {
     getPeopleAll = async (req: any, res: any) => {

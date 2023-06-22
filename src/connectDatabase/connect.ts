@@ -1,5 +1,6 @@
 const { Sequelize } = require('sequelize');
 import mongoose from 'mongoose';
+
 require('dotenv').config();
 
 class Server {
@@ -35,9 +36,8 @@ class Server {
 
     ConnectMongoDB = async () => {
         try {
-            await mongoose.connect(
-                'mongodb+srv://Spaceship:hung0507200301645615023@cluster0.chumwfw.mongodb.net/spaceship',
-            );
+            const URL = 'mongodb+srv://Spaceship:hung0507200301645615023@cluster0.chumwfw.mongodb.net/spaceship';
+            await mongoose.connect(URL);
             console.log('Connected to MongoDB Successful!');
         } catch (error) {
             console.log('Connected to MongoDB Faild!');

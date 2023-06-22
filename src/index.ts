@@ -8,6 +8,10 @@ import cookieParser from 'cookie-parser';
 import routeSN from './routes/websRoutes/index';
 import os from 'os';
 import compression from 'compression';
+import methodOverride from 'method-override';
+
+// Middleware
+
 const Redis = require('ioredis');
 
 import Server from './connectDatabase/connect';

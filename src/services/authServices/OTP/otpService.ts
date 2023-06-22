@@ -1,6 +1,6 @@
 import { google } from 'googleapis';
 import nodemailer from 'nodemailer';
-import { Prohibit, VerifyMail } from '../../../models/verify/sendOTPMail';
+import { Prohibit, VerifyMail } from '../../../models/mongodb/sendOTPMail';
 import Security from '../Security';
 import bcrypt from 'bcryptjs';
 import moment from 'moment';
