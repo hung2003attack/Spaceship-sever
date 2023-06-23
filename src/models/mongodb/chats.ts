@@ -3,24 +3,28 @@ const Schema = mongoose.Schema;
 
 const chats = new Schema(
     {
-        status: { type: String, maxLength: 10 },
+        id_us: [String(50)],
+        user: [],
+        status: { type: String, maxLength: 11 },
+        first: { id: { type: String, maxLength: 50 } },
         background: { type: String, maxLength: 50 },
+        imageOrVideos: [String(50)],
         room: [
             {
-                id_user: { type: String, require: true, maxLength: 50 },
-                chat: [
-                    {
-                        text: {
-                            t: { type: String, text: true },
-                            icon: { type: String },
-                        },
-                        imageOrVideos: [{ v: { type: String, maxLength: 50 }, icon: { type: String, maxLength: 1 } }],
-                    },
+                _id: { type: String, required: true, maxLength: 50 },
+                text: {
+                    t: { type: String, text: String },
+                    icon: { type: String, default: '' },
+                },
+                imageOrVideos: [
+                    { v: { type: String, maxLength: 50 }, icon: { type: String, maxLength: 1, default: '' } },
                 ],
-                createdAt: { type: Date, default: Date.now },
+                seenBy: [String(50)],
+                createdAt: { type: Date, default: Date.now() },
             },
+            { _id: false },
         ],
-        createdAt: { type: Date, default: Date.now },
+        createdAt: { type: Date, default: Date.now() },
     },
     {
         timestamps: true,

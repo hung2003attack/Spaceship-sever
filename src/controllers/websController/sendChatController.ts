@@ -4,9 +4,36 @@ import SendChatServiceSN from '../../services/WebsServices/SendChatServiceSN';
 class SendChat {
     send = async (req: any, res: any) => {
         try {
+            const id = req.cookies.k_user;
             const value = req.body.value;
+            const id_others = req.body.id_others;
             const files = req.files;
-            const data = await SendChatServiceSN.send(value, files);
+            files.forEach((file: { id: any; metadata: { fileId: any } }) => {
+                const fileId = file.id; // Lấy _id của tệp tin
+                // Gán _id vào metadata của fileInfo
+                file.metadata.fileId = fileId;
+            });
+            console.log(id, id_others);
+
+            if (id && id_others) {
+                const data = await SendChatServiceSN.send(id, id_others, value, files);
+                return res.status(200).json(data);
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    getRoom = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            const limit = req.query.limit;
+            const offset = req.query.offset;
+            console.log(id, limit, offset);
+
+            if (id) {
+                const data = await SendChatServiceSN.getRoom(id, Number(limit), Number(offset));
+                return res.status(200).json(data);
+            }
         } catch (error) {
             console.log(error);
         }

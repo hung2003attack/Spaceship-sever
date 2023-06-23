@@ -2,7 +2,6 @@ const { Sequelize } = require('sequelize');
 import mongoose from 'mongoose';
 
 require('dotenv').config();
-
 class Server {
     ConnectMySQL() {
         const sequelize = new Sequelize(
