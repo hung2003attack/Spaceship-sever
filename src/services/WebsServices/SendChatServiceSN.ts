@@ -3,7 +3,6 @@ import DateTime from '../../DateTimeCurrent/DateTimeCurrent';
 const Sequelize = require('sequelize');
 const { ObjectId } = require('mongodb');
 const Op = Sequelize.Op;
-import { getFileById } from '../../routes/websRoutes/sendChat';
 const URL = 'mongodb+srv://Spaceship:hung0507200301645615023@cluster0.chumwfw.mongodb.net/spaceship';
 
 const db = require('../../models');
@@ -70,6 +69,12 @@ class SendChatService {
                     console.log(res, 'send chat', DateTime(), room);
                     resolve(room);
                 } else {
+                    if (ids_file) {
+                        for (let id of ids_file) {
+                            console.log(id);
+                            imagesOrVideos.push({ v: id, icon: '' });
+                        }
+                    }
                     console.log(value, 'value', id, id_others);
                     const arr: any = {
                         text: {

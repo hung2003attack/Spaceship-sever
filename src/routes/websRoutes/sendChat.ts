@@ -20,89 +20,6 @@ conn.once('open', () => {
     gfs = Grid(conn.db, mongoose.mongo);
     gfs.collection('uploads');
 });
-export const getFileById = async (_id: any) => {
-    console.log(_id, 'get file');
-    const file_ss = [];
-    return new Promise((resolve, reject) => {
-        try {
-            const bucket = new mongoose.mongo.GridFSBucket(conn.db, { bucketName: 'uploads' });
-            gfs.files.findOne({ metadata: { id_file: _id } }, async (err: any, file: any) => {
-                console.log(file, 'file herer');
-                if (!file || file.length === 0) {
-                    return { err: 'No file exists', status: 404 };
-                }
-
-                // Check if image
-                if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
-                    const downloadStream = bucket.openDownloadStream(file._id);
-                    const file_b = bucket.find({ filename: file.filename }).toArray((err: any, result: any) => {
-                        if (err) console.log(err);
-                        if (!result || result.length === 0) {
-                            console.log('File not found');
-                        }
-                        console.log(result, 'file image');
-                    });
-                    downloadStream.on('data', (data) => {
-                        console.log(data, 'dât');
-                        resolve(data);
-                    });
-
-                    downloadStream.on('end', () => {
-                        console.log('end');
-                    });
-
-                    downloadStream.on('error', (error) => {
-                        // Handle the error
-                        console.error('Error while reading the file:', error);
-                    });
-                    // Read output to browser
-                    // const fileStream = gfs.createReadStream(file.filename);
-                    // fileStream.on('data', (data: any) => {
-                    //     // Xử lý dữ liệu đọc được
-                    //     console.log(data, 'start');
-                    // });
-
-                    // // Xử lý sự kiện khi kết thúc stream
-                    // fileStream.on('end', () => {
-                    //     // Hoàn thành việc đọc tệp tin
-                    //     console.log('Đã hoàn thành đọc tệp tin');
-                    // });
-
-                    // // Xử lý sự kiện khi có lỗi xảy ra trong quá trình đọc stream
-                    // fileStream.on('error', (error: any) => {
-                    //     // Xử lý lỗi
-                    //     console.log('Lỗi khi đọc tệp tin:', error);
-                    // });
-                    // readstream.pipe(res);
-                } else {
-                    console.log('Not Images');
-                }
-            });
-
-            // const fileStream = bucket.openDownloadStream(_id);
-
-            // // Xử lý sự kiện khi đọc stream
-            // fileStream.on('data', (data: any) => {
-            //     // Xử lý dữ liệu đọc được
-            //     console.log(data, 'start');
-            // });
-
-            // // Xử lý sự kiện khi kết thúc stream
-            // fileStream.on('end', () => {
-            //     // Hoàn thành việc đọc tệp tin
-            //     console.log('Đã hoàn thành đọc tệp tin');
-            // });
-
-            // // Xử lý sự kiện khi có lỗi xảy ra trong quá trình đọc stream
-            // fileStream.on('error', (error: any) => {
-            //     // Xử lý lỗi
-            //     console.log('Lỗi khi đọc tệp tin:', error);
-            // });
-        } catch (error) {
-            reject(error);
-        }
-    });
-};
 
 const storage = new GridFsStorage({
     url: URL,
@@ -137,4 +54,41 @@ router.post('/send', upload.array('files'), sendChatController.send);
 
 router.get('/getRoom', sendChatController.getRoom);
 router.get('/getChat', sendChatController.getChat);
+router.get('/getFile', (req: any, res: any) => {
+    const id_file = req.query.id_file;
+    console.log(id_file, 'get file');
+    const file_ss = [];
+    const bucket = new mongoose.mongo.GridFSBucket(conn.db, { bucketName: 'uploads' });
+    gfs.files.findOne({ metadata: { id_file } }, async (err: any, file: any) => {
+        console.log(file, 'file herer');
+        if (!file || file.length === 0) {
+            return res.status(404).json('Files are not exist!');
+        }
+
+        // Check if image
+        if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
+            const downloadStream = bucket.openDownloadStream(file._id);
+            const file_b = bucket.find({ filename: file.filename }).toArray((err: any, result: any) => {
+                if (err) console.log(err);
+                if (!result || result.length === 0) {
+                    return res.status(404).json('Not found!');
+                }
+            });
+            downloadStream.on('data', (data) => {
+                return res.status(200).json({ type: file.contentType, file: data });
+            });
+
+            downloadStream.on('end', () => {
+                console.log('end');
+            });
+
+            downloadStream.on('error', (error) => {
+                // Handle the error
+                console.error('Error while reading the file:', error);
+            });
+        } else {
+            console.log('Not Images');
+        }
+    });
+});
 export default router;
