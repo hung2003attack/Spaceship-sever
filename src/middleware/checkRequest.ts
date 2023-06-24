@@ -21,6 +21,7 @@ class CheckRequest {
 
         // redisClient.get()
     };
+
     changeText = (req: any, res: any, next: any) => {
         const id = req.cookies.k_user;
         const params = req.body.params.params;

@@ -29,11 +29,22 @@ class SendChat {
             const limit = req.query.limit;
             const offset = req.query.offset;
             console.log(id, limit, offset);
-
-            if (id) {
-                const data = await SendChatServiceSN.getRoom(id, Number(limit), Number(offset));
-                return res.status(200).json(data);
-            }
+            const data = await SendChatServiceSN.getRoom(id, Number(limit), Number(offset));
+            return res.status(200).json(data);
+        } catch (error) {
+            console.log(error);
+        }
+    };
+    getChat = async (req: any, res: any) => {
+        try {
+            const id = req.cookies.k_user;
+            const id_room = req.query.id_room;
+            const id_other = req.query.id_other;
+            const limit = req.query.limit;
+            const offset = req.query.offset;
+            console.log(id, limit, offset, '-cc');
+            const data = await SendChatServiceSN.getChat(id_room, id, id_other, Number(limit), Number(offset));
+            return res.status(200).json(data);
         } catch (error) {
             console.log(error);
         }

@@ -8,7 +8,6 @@ const chats = new Schema(
         status: { type: String, maxLength: 11 },
         first: { id: { type: String, maxLength: 50 } },
         background: { type: String, maxLength: 50 },
-        imageOrVideos: [String(50)],
         room: [
             {
                 _id: { type: String, required: true, maxLength: 50 },

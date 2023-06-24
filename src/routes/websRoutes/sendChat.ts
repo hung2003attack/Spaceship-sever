@@ -136,4 +136,5 @@ const upload = multer({ storage });
 router.post('/send', upload.array('files'), sendChatController.send);
 
 router.get('/getRoom', sendChatController.getRoom);
+router.get('/getChat', sendChatController.getChat);
 export default router;
