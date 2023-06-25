@@ -8,7 +8,7 @@ const URL = 'mongodb+srv://Spaceship:hung0507200301645615023@cluster0.chumwfw.mo
 const db = require('../../models');
 
 class SendChatService {
-    send(id: string, id_others: string, value: string, files: any) {
+    send(id_room: string, id: string, id_others: string, value: string, files: any) {
         return new Promise(async (resolve, reject) => {
             try {
                 console.log(files);
@@ -69,13 +69,14 @@ class SendChatService {
                     console.log(res, 'send chat', DateTime(), room);
                     resolve(room);
                 } else {
+                    console.log(ids_file, 'ids_file');
+
                     if (ids_file) {
                         for (let id of ids_file) {
-                            console.log(id);
                             imagesOrVideos.push({ v: id, icon: '' });
                         }
                     }
-                    console.log(value, 'value', id, id_others);
+                    console.log(id_room, value, 'value', id, id_others);
                     const arr: any = {
                         text: {
                             t: value,
@@ -85,10 +86,10 @@ class SendChatService {
                         seenBy: [],
                         imageOrVideos: imagesOrVideos,
                     };
-                    const roomUpdate = await RoomChats.findOne({ id_us: { $all: [id, id_others] } }).exec(function (
-                        err,
-                        book,
-                    ) {
+                    const roomUpdate = await RoomChats.findOne({
+                        _id: ObjectId(id_room),
+                        id_us: { $all: [id, id_others] },
+                    }).exec(function (err, book) {
                         if (err) console.log(err);
                         book?.room.push(arr);
                         book?.save();
@@ -118,7 +119,8 @@ class SendChatService {
                 const roomChat = await RoomChats.aggregate([
                     { $match: { _id: { $in: newId } } }, // Lọc theo điều kiện tương ứng với _id của document
                     { $unwind: '$room' }, // Tách mỗi phần tử trong mảng room thành một document riêng
-                    { $sort: { 'room.createdAt': -1 } }, // Sắp xếp theo trường createdAt trong mỗi phần tử room
+                    { $sort: { 'room.createdAt': 1 } }, // Sắp xếp theo trường createdAt trong mỗi phần tử room
+
                     {
                         $group: {
                             _id: '$_id',
@@ -158,8 +160,8 @@ class SendChatService {
                                             reject(error);
                                         }
                                     });
-                                    const chat = await fetch(rs.room._id);
-                                    dd[index].room.user = chat;
+                                    // const chat = await fetch(rs.room._id);
+                                    // dd[index].room.user = chat;
                                     if (index + 1 === roomChat.length) resolve2(dd);
                                 });
                             } catch (error) {

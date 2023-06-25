@@ -8,6 +8,7 @@ class SendChat {
             const value = req.body.value;
             const id_others = req.body.id_others;
             const files = req.files;
+            const id_room = req.body.id_room;
             files.forEach((file: { id: any; metadata: { fileId: any } }) => {
                 const fileId = file.id; // Lấy _id của tệp tin
                 // Gán _id vào metadata của fileInfo
@@ -16,7 +17,7 @@ class SendChat {
             console.log(id, id_others);
 
             if (id && id_others) {
-                const data = await SendChatServiceSN.send(id, id_others, value, files);
+                const data = await SendChatServiceSN.send(id_room, id, id_others, value, files);
                 return res.status(200).json(data);
             }
         } catch (error) {
@@ -42,6 +43,7 @@ class SendChat {
             const id_other = req.query.id_other;
             const limit = req.query.limit;
             const offset = req.query.offset;
+
             console.log(id, limit, offset, '-cc');
             const data = await SendChatServiceSN.getChat(id_room, id, id_other, Number(limit), Number(offset));
             return res.status(200).json(data);

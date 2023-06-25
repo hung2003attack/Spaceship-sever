@@ -20,7 +20,6 @@ conn.once('open', () => {
     gfs = Grid(conn.db, mongoose.mongo);
     gfs.collection('uploads');
 });
-
 const storage = new GridFsStorage({
     url: URL,
     file: (req: any, files: { originalname: any }) => {
@@ -54,40 +53,30 @@ router.post('/send', upload.array('files'), sendChatController.send);
 
 router.get('/getRoom', sendChatController.getRoom);
 router.get('/getChat', sendChatController.getChat);
-router.get('/getFile', (req: any, res: any) => {
+router.get('/getFile', async (req: any, res: any) => {
     const id_file = req.query.id_file;
-    console.log(id_file, 'get file');
-    const file_ss = [];
     const bucket = new mongoose.mongo.GridFSBucket(conn.db, { bucketName: 'uploads' });
-    gfs.files.findOne({ metadata: { id_file } }, async (err: any, file: any) => {
-        console.log(file, 'file herer');
+    await gfs.files.findOne({ metadata: { id_file } }, async (err: any, file: any) => {
         if (!file || file.length === 0) {
             return res.status(404).json('Files are not exist!');
         }
-
         // Check if image
         if (file.contentType === 'image/jpeg' || file.contentType === 'image/png') {
+            let dataTest: any = '';
+            const file_ss: any = [];
             const downloadStream = bucket.openDownloadStream(file._id);
-            const file_b = bucket.find({ filename: file.filename }).toArray((err: any, result: any) => {
-                if (err) console.log(err);
-                if (!result || result.length === 0) {
-                    return res.status(404).json('Not found!');
-                }
-            });
             downloadStream.on('data', (data) => {
-                return res.status(200).json({ type: file.contentType, file: data });
+                file_ss.push(data);
             });
-
             downloadStream.on('end', () => {
-                console.log('end');
+                const buffer = Buffer.concat(file_ss);
+                return res.status(200).json({ type: file.contentType, file: buffer });
             });
 
             downloadStream.on('error', (error) => {
                 // Handle the error
                 console.error('Error while reading the file:', error);
             });
-        } else {
-            console.log('Not Images');
         }
     });
 });
