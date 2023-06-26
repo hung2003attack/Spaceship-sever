@@ -44,8 +44,10 @@ class SendChatService {
                                     t: value,
                                 },
                                 imageOrVideos: imagesOrVideos,
+                                createdAt: DateTime(),
                             },
                         ],
+                        createdAt: DateTime(),
                     });
                     if (room) {
                         const addRoom_you = await db.roomChats.create(
@@ -85,6 +87,7 @@ class SendChatService {
                         _id: id,
                         seenBy: [],
                         imageOrVideos: imagesOrVideos,
+                        createdAt: DateTime(),
                     };
                     const roomUpdate = await RoomChats.findOne({
                         _id: ObjectId(id_room),
@@ -119,7 +122,7 @@ class SendChatService {
                 const roomChat = await RoomChats.aggregate([
                     { $match: { _id: { $in: newId } } }, // Lọc theo điều kiện tương ứng với _id của document
                     { $unwind: '$room' }, // Tách mỗi phần tử trong mảng room thành một document riêng
-                    { $sort: { 'room.createdAt': 1 } }, // Sắp xếp theo trường createdAt trong mỗi phần tử room
+                    { $sort: { 'room.createdAt': -1 } }, // Sắp xếp theo trường createdAt trong mỗi phần tử room
 
                     {
                         $group: {
@@ -130,51 +133,50 @@ class SendChatService {
                             room: { $first: '$room' },
                         },
                     }, // Gom các document thành một mảng room
-                    { $sort: { createdAt: -1 } },
+                    { $sort: { 'room.createdAt': -1 } },
                 ]);
                 console.log(roomChat, 'roomChat');
 
-                const id_user: any = [];
-                async function fetch(id_u: string) {
-                    return await db.users.findOne({
-                        where: { id: id_u },
-                        attributes: ['id', 'avatar', 'fullName', 'gender'],
-                        raw: true,
-                    });
-                }
-                const newData = await new Promise<any>(async (resolve1, reject) => {
+                const newData = await new Promise<any>(async (resolve2, reject) => {
                     try {
-                        const newD = await new Promise<any>((resolve2, reject) => {
-                            try {
-                                roomChat.map(async (rs, index) => {
-                                    const dd: any = await new Promise((resolve3, reject) => {
-                                        try {
-                                            const sd = rs.id_us.map(async (id_u: any) => {
+                        await Promise.all(
+                            roomChat.map(async (rs, index) => {
+                                const dd: any = await new Promise(async (resolve3, reject) => {
+                                    try {
+                                        const sd = await Promise.all(
+                                            rs.id_us.map(async (id_u: any) => {
                                                 if (id_u !== id) {
-                                                    const df = await fetch(id_u);
-                                                    roomChat[index].user.push(df);
-                                                    resolve3(roomChat);
-                                                }
-                                            });
-                                        } catch (error) {
-                                            reject(error);
-                                        }
-                                    });
-                                    // const chat = await fetch(rs.room._id);
-                                    // dd[index].room.user = chat;
-                                    if (index + 1 === roomChat.length) resolve2(dd);
-                                });
-                            } catch (error) {
-                                reject(error);
-                            }
-                        });
-                        console.log(newD, 'newD');
+                                                    const df = await db.users.findOne({
+                                                        where: { id: id_u },
+                                                        attributes: ['id', 'avatar', 'fullName', 'gender'],
+                                                        raw: true,
+                                                    });
+                                                    console.log(df, 'dfff');
 
-                        resolve1(newD);
+                                                    roomChat[index].user.push(df);
+                                                }
+                                            }),
+                                        );
+                                        resolve3(roomChat);
+                                    } catch (error) {
+                                        reject(error);
+                                    }
+                                });
+                                // const chat = await fetch(rs.room._id);
+                                // dd[index].room.user = chat;
+
+                                // if (index + 1 === roomChat.length) {
+                                //     console.log(dd, 'dd');
+                                //     resolve2(dd);
+                                // }
+                            }),
+                        );
+                        resolve2(roomChat);
                     } catch (error) {
                         reject(error);
                     }
                 });
+
                 console.log(newData);
 
                 resolve(newData);
