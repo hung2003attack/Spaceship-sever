@@ -14,10 +14,17 @@ class SendChatService {
                 console.log(files);
                 const ids_file: any = files.map((f: any) => f.metadata.id_file.toString());
                 console.log(ids_file, 'id');
+                const AllOfFile: string[] = [];
                 const imagesOrVideos: { v: any; icon: string }[] = [];
                 const res = await RoomChats.findOne({ id_us: { $all: [id, id_others] } });
                 console.log(res, 'RoomChats.findOne');
-
+                if (ids_file) {
+                    for (let id of ids_file) {
+                        AllOfFile.push(id);
+                        console.log(id);
+                        imagesOrVideos.push({ v: id, icon: '' });
+                    }
+                }
                 if (!res) {
                     const friend = await db.friends.findOne({
                         where: {
@@ -27,15 +34,11 @@ class SendChatService {
                             ],
                         },
                     });
-                    if (ids_file) {
-                        for (let id of ids_file) {
-                            console.log(id);
-                            imagesOrVideos.push({ v: id, icon: '' });
-                        }
-                    }
+
                     const room = await RoomChats.create({
                         id_us: [id, id_others],
                         status: friend ? 'isFriend' : 'isNotFriend',
+                        imageOrVideos: AllOfFile,
                         background: '',
                         room: [
                             {
@@ -50,7 +53,7 @@ class SendChatService {
                         createdAt: DateTime(),
                     });
                     if (room) {
-                        const addRoom_you = await db.roomChats.create(
+                        await db.roomChats.create(
                             {
                                 id_user: id,
                                 id_room: room._id.toString(),
@@ -58,7 +61,7 @@ class SendChatService {
                             },
                             { raw: true },
                         );
-                        const addRoom_others = await db.roomChats.create(
+                        await db.roomChats.create(
                             {
                                 id_user: id_others,
                                 id_room: room._id.toString(),
@@ -66,18 +69,11 @@ class SendChatService {
                             },
                             { raw: true },
                         );
-                        console.log(addRoom_you, 'addRoom', addRoom_others);
                     }
                     console.log(res, 'send chat', DateTime(), room);
                     resolve(room);
                 } else {
                     console.log(ids_file, 'ids_file');
-
-                    if (ids_file) {
-                        for (let id of ids_file) {
-                            imagesOrVideos.push({ v: id, icon: '' });
-                        }
-                    }
                     console.log(id_room, value, 'value', id, id_others);
                     const arr: any = {
                         text: {
@@ -89,15 +85,17 @@ class SendChatService {
                         imageOrVideos: imagesOrVideos,
                         createdAt: DateTime(),
                     };
-                    const roomUpdate = await RoomChats.findOne({
-                        _id: ObjectId(id_room),
-                        id_us: { $all: [id, id_others] },
-                    }).exec(function (err, book) {
-                        if (err) console.log(err);
-                        book?.room.push(arr);
-                        book?.save();
-                    });
+
+                    const roomUpdate = await RoomChats.updateOne(
+                        {
+                            _id: ObjectId(id_room),
+                            id_us: { $all: [id, id_others] },
+                        },
+                        { $push: { room: arr, imageOrVideos: { $each: AllOfFile } } },
+                    );
+
                     console.log(roomUpdate, 'roomUpdate');
+                    resolve(roomUpdate.acknowledged);
                 }
             } catch (error) {
                 reject(error);

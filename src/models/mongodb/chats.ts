@@ -3,11 +3,12 @@ const Schema = mongoose.Schema;
 
 const chats = new Schema(
     {
-        id_us: [String(50)],
+        id_us: { type: [String(50)], unique: true },
         user: [],
         status: { type: String, maxLength: 11 },
         first: { id: { type: String, maxLength: 50 } },
-        background: { type: String, maxLength: 50 },
+        imageOrVideos: [String(50)],
+        background: { type: [String(50)], unique: true },
         room: [
             {
                 _id: { type: String, required: true, maxLength: 50 },
