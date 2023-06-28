@@ -11,12 +11,11 @@ class SendChatService {
     send(id_room: string, id: string, id_others: string, value: string, files: any) {
         return new Promise(async (resolve, reject) => {
             try {
-                console.log(files);
+                console.log(files, id_room, id, id_others, value, '----');
                 const ids_file: any = files.map((f: any) => f.metadata.id_file.toString());
-                console.log(ids_file, 'id');
                 const AllOfFile: string[] = [];
                 const imagesOrVideos: { v: any; icon: string }[] = [];
-                const res = await RoomChats.findOne({ id_us: { $all: [id, id_others] } });
+                const res = await RoomChats.findOne({ _id: ObjectId(id_room), id_us: { $all: [id, id_others] } });
                 console.log(res, 'RoomChats.findOne');
                 if (ids_file) {
                     for (let id of ids_file) {
@@ -94,7 +93,6 @@ class SendChatService {
                         { $push: { room: arr, imageOrVideos: { $each: AllOfFile } } },
                     );
 
-                    console.log(roomUpdate, 'roomUpdate');
                     resolve(roomUpdate.acknowledged);
                 }
             } catch (error) {
@@ -134,7 +132,6 @@ class SendChatService {
                     { $sort: { 'room.createdAt': -1 } },
                 ]);
                 console.log(roomChat, 'roomChat');
-
                 const newData = await new Promise<any>(async (resolve2, reject) => {
                     try {
                         await Promise.all(
@@ -160,13 +157,6 @@ class SendChatService {
                                         reject(error);
                                     }
                                 });
-                                // const chat = await fetch(rs.room._id);
-                                // dd[index].room.user = chat;
-
-                                // if (index + 1 === roomChat.length) {
-                                //     console.log(dd, 'dd');
-                                //     resolve2(dd);
-                                // }
                             }),
                         );
                         resolve2(roomChat);
@@ -183,31 +173,35 @@ class SendChatService {
             }
         });
     }
-    getChat(id_room: string, id: string, id_other: string, limit: number, offset: number) {
+    getChat(id_room: string, id: string, id_other: string, limit: number, offset: number, of: boolean) {
         return new Promise(async (resolve, reject) => {
             try {
                 console.log(id_room, id, id_other, limit, offset);
-
+                const Group = of
+                    ? {
+                          _id: '$_id',
+                          room: { $push: '$room' },
+                      }
+                    : {
+                          _id: '$_id',
+                          id_us: { $first: '$id_us' },
+                          bakcground: { $first: '$bakcground' },
+                          status: { $first: '$status' },
+                          room: { $push: '$room' },
+                          createdAt: { $first: '$createdAt' },
+                      };
                 const roomChat = await RoomChats.aggregate([
                     { $match: { _id: ObjectId(id_room) } }, // Match the document with the specified roomId
                     { $unwind: '$room' }, // Unwind the room array
-                    { $sort: { 'room.createdAt': 1 } }, // Sort by createdAt field in descending order
+                    { $sort: { 'room.createdAt': -1 } }, // Sort by createdAt field in descending order
                     { $skip: offset }, // Skip the specified number of documents
                     { $limit: limit }, // Limit the number of documents to retrieve
                     {
-                        $group: {
-                            _id: '$_id',
-                            id_us: { $first: '$id_us' },
-                            bakcground: { $first: '$bakcground' },
-                            status: { $first: '$status' },
-                            room: { $push: '$room' },
-                            createdAt: { $first: '$createdAt' },
-                        },
+                        $group: Group,
                     }, // Group the documents and reconstruct the room array
                 ]);
-                console.log(roomChat[0], 'roomChat');
-
-                resolve(roomChat);
+                console.log(roomChat[0], 'roomChat', of);
+                resolve(roomChat[0]);
             } catch (error) {
                 reject(error);
             }

@@ -5,6 +5,7 @@ class SendChat {
     send = async (req: any, res: any) => {
         try {
             const id = req.cookies.k_user;
+            const io = res.io;
             const value = req.body.value;
             const id_others = req.body.id_others;
             const files = req.files;
@@ -16,8 +17,11 @@ class SendChat {
             });
             console.log(id, id_others);
 
-            if (id && id_others) {
+            if (id_others) {
                 const data = await SendChatServiceSN.send(id_room, id, id_others, value, files);
+                console.log(data, 'data----');
+
+                if (data) io.emit(`${id_others}roomChat`);
                 return res.status(200).json(data);
             }
         } catch (error) {
@@ -43,9 +47,10 @@ class SendChat {
             const id_other = req.query.id_other;
             const limit = req.query.limit;
             const offset = req.query.offset;
+            const of = req.query.of;
 
             console.log(id, limit, offset, '-cc');
-            const data = await SendChatServiceSN.getChat(id_room, id, id_other, Number(limit), Number(offset));
+            const data = await SendChatServiceSN.getChat(id_room, id, id_other, Number(limit), Number(offset), of);
             return res.status(200).json(data);
         } catch (error) {
             console.log(error);
