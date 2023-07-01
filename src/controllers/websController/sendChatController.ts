@@ -1,4 +1,3 @@
-import uploadGridFS from '../../middleware/uploadGridFS';
 import SendChatServiceSN from '../../services/WebsServices/SendChatServiceSN';
 
 class SendChat {

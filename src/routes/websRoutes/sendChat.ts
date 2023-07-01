@@ -1,7 +1,6 @@
 import express from 'express';
 import JWTVERIFY from '../../middleware/jwtAuth';
 import sendChatController from '../../controllers/websController/sendChatController';
-import uploadGridFS from '../../middleware/uploadGridFS';
 import mongoose from 'mongoose';
 import multer from 'multer';
 import { v4 as primaryKey } from 'uuid';

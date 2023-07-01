@@ -11,7 +11,6 @@ class SendChatService {
     send(id_room: string, id: string, id_others: string, value: string, files: any) {
         return new Promise(async (resolve, reject) => {
             try {
-                console.log(files, id_room, id, id_others, value, '----');
                 const ids_file: any = files.map((f: any) => f.metadata.id_file.toString());
                 const AllOfFile: string[] = [];
                 const imagesOrVideos: { v: any; icon: string }[] = [];
