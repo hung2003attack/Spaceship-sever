@@ -25,7 +25,11 @@ const comments = [
 ];
 const Posts = new Schema({
     id_user: { type: String(50), required: true },
-    content: { text: { type: String, text: String }, imageOrVideos: [String(50)] },
+    type: { type: Number(1) },
+    content: {
+        text: { type: String, text: String },
+        imageOrVideos: [{ file: { type: String(50) }, love: { type: String(11), defaultValue: 0 }, comments }],
+    },
     feel,
     amountComments: { type: Number(11), default: 0 },
     commentsOne: comments,
