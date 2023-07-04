@@ -19,7 +19,7 @@ const storage = new GridFsStorage({
     file: (req: any, files: { originalname: any }) => {
         return new Promise((resolve, reject) => {
             try {
-                console.log(files, 'file');
+                console.log(files, 'file', 'title');
 
                 crypto.randomBytes(16, (err: any, buf: { toString: (arg0: string) => any }) => {
                     if (err) {
@@ -32,12 +32,13 @@ const storage = new GridFsStorage({
                         bucketName: 'uploads',
                         metadata: {
                             id_file: id, // Trường để lưu _id của tệp tin
+                            title: files.originalname !== 'blob' ? files.originalname : '',
                         },
                     };
                     resolve(fileInfo);
                 });
             } catch (error) {
-                console.log(error);
+                reject(error);
             }
         });
     },

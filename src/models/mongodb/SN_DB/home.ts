@@ -33,9 +33,10 @@ const Posts = new Schema({
         imageOrVideos: [
             {
                 file: { type: String(50) },
+                title: { type: String(100) },
                 love: { act: { type: Number(11), defaultValue: 0 }, id_user: [String(50)] },
                 comments,
-                options: { title: { type: String(100) }, Bgcolors: { type: String(10) }, column: { type: Number(2) } },
+                options: { Bgcolors: { type: String(10) }, column: { type: Number(2) } },
             },
         ],
     },

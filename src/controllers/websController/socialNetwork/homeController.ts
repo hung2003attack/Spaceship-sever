@@ -3,14 +3,25 @@ class homeController {
     setPost = async (req: any, res: any) => {
         try {
             const id = req.cookies.k_user;
+            let more: { title?: string; bg?: string; column?: number } = {};
             const io = res.io;
             const value = req.body.text;
             const files = req.files;
             const category = req.body.category;
             const fontFamily = req.body.fontFamily;
+
+            if (category === 0) {
+                const title = req.body.title;
+                more = { title };
+            } else if (category === 2) {
+                const column = req.body.column;
+                const bg = req.body.bg;
+                more = { bg, column };
+            }
+
             console.log(value, files, req.body);
 
-            const data = await HomeServiceSN.setPost(id, value, category, fontFamily, files);
+            const data = await HomeServiceSN.setPost(id, value, category, fontFamily, files, more);
         } catch (error) {
             console.log(error);
         }
