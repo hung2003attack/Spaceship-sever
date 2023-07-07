@@ -9,6 +9,8 @@ class homeController {
             const files = req.files;
             const category = req.body.category;
             const fontFamily = req.body.fontFamily;
+            const expire = req.body.expire;
+            const privates = req.body.private;
 
             if (category === 0) {
                 const title = req.body.title;
@@ -21,7 +23,16 @@ class homeController {
 
             console.log(value, files, req.body);
 
-            const data = await HomeServiceSN.setPost(id, value, category, fontFamily, files, more);
+            const data = await HomeServiceSN.setPost(
+                id,
+                value,
+                category,
+                fontFamily,
+                files,
+                more,
+                Number(expire),
+                JSON.parse(privates),
+            );
         } catch (error) {
             console.log(error);
         }

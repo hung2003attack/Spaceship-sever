@@ -12,6 +12,8 @@ class HomeServiceSN {
         fontFamily: string,
         files: any,
         more: { title?: string; bg?: string; column?: number },
+        expire: number,
+        privates: { id: number; name: string }[],
     ) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -23,15 +25,28 @@ class HomeServiceSN {
                     };
                 });
                 console.log(imageOrVideos, 'ids_file', value, fontFamily, id);
-                // const res = await NewPost.create({
-                //     id_user: id,
-                //     content: {
-                //         text: value,
-                //         imageOrVideos: imageOrVideos,
-                //     },
-                //     createdAt: DateTime(),
-                // });
-                // console.log(res, 'res');
+                if (expire) {
+                    const res = await NewPost.create({
+                        id_user: id,
+                        content: {
+                            text: value,
+                            imageOrVideos: imageOrVideos,
+                        },
+                        createdAt: DateTime(),
+                        expireAfterSeconds: expire,
+                    });
+                    console.log(res, 'res expire');
+                } else {
+                    const res = await NewPost.create({
+                        id_user: id,
+                        content: {
+                            text: value,
+                            imageOrVideos: imageOrVideos,
+                        },
+                        createdAt: DateTime(),
+                    });
+                    console.log(res, 'res no expire');
+                }
 
                 // resolve(data);
             } catch (err) {

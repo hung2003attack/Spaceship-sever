@@ -19,24 +19,25 @@ const storage = new GridFsStorage({
     file: (req: any, files: { originalname: any }) => {
         return new Promise((resolve, reject) => {
             try {
-                console.log(files, 'file', 'title');
+                const expires = req.body.expire;
+                console.log(files, 'file', 'title', expires);
 
-                crypto.randomBytes(16, (err: any, buf: { toString: (arg0: string) => any }) => {
-                    if (err) {
-                        return reject(err);
-                    }
-                    const id = primaryKey();
-                    const filename = buf.toString('hex') + path.extname(files.originalname);
-                    const fileInfo = {
-                        filename: filename,
-                        bucketName: 'uploads',
-                        metadata: {
-                            id_file: id, // Trường để lưu _id của tệp tin
-                            title: files.originalname !== 'blob' ? files.originalname : '',
-                        },
-                    };
-                    resolve(fileInfo);
-                });
+                // crypto.randomBytes(16, (err: any, buf: { toString: (arg0: string) => any }) => {
+                //     if (err) {
+                //         return reject(err);
+                //     }
+                //     const id = primaryKey();
+                //     const filename = buf.toString('hex') + path.extname(files.originalname);
+                //     const fileInfo = {
+                //         filename: filename,
+                //         bucketName: 'uploads',
+                //         metadata: {
+                //             id_file: id, // Trường để lưu _id của tệp tin
+                //             title: files.originalname !== 'blob' ? files.originalname : '',
+                //         },
+                //     };
+                //     resolve(fileInfo);
+                // });
             } catch (error) {
                 reject(error);
             }

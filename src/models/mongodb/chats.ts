@@ -3,7 +3,7 @@ const Schema = mongoose.Schema;
 
 const chats = new Schema(
     {
-        id_us: { type: [String(50)], unique: true },
+        id_us: { type: [String], unique: true },
         user: [],
         status: { type: String, maxLength: 11 },
         first: { id: { type: String, maxLength: 50 } },
