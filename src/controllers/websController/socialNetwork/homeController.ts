@@ -11,6 +11,7 @@ class homeController {
             const fontFamily = req.body.fontFamily;
             const expire = req.body.expire;
             const privates = req.body.private;
+            const imotions = req.body.imotions;
 
             if (category === 0) {
                 const title = req.body.title;
@@ -32,7 +33,9 @@ class homeController {
                 more,
                 Number(expire),
                 JSON.parse(privates),
+                JSON.parse(imotions),
             );
+            return res.status(200).json(data);
         } catch (error) {
             console.log(error);
         }

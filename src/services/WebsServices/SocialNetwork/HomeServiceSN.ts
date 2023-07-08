@@ -14,6 +14,7 @@ class HomeServiceSN {
         more: { title?: string; bg?: string; column?: number },
         expire: number,
         privates: { id: number; name: string }[],
+        imotigons: { id: number; name: string }[],
     ) => {
         return new Promise(async (resolve, reject) => {
             try {
@@ -32,10 +33,14 @@ class HomeServiceSN {
                             text: value,
                             imageOrVideos: imageOrVideos,
                         },
+                        feel: {
+                            only: imotigons,
+                        },
                         createdAt: DateTime(),
                         expireAfterSeconds: expire,
                     });
                     console.log(res, 'res expire');
+                    resolve(res);
                 } else {
                     const res = await NewPost.create({
                         id_user: id,
@@ -43,12 +48,14 @@ class HomeServiceSN {
                             text: value,
                             imageOrVideos: imageOrVideos,
                         },
+                        feel: {
+                            only: imotigons,
+                        },
                         createdAt: DateTime(),
                     });
                     console.log(res, 'res no expire');
+                    resolve(res);
                 }
-
-                // resolve(data);
             } catch (err) {
                 reject(err);
             }

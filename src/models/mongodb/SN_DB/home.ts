@@ -5,6 +5,7 @@ const feel = {
     love: { act: { type: Number, maxLength: 10, defaultValue: 0 }, id_user: [String] },
     smile: { act: { type: Number, maxLength: 10, defaultValue: 0 }, id_user: [String] },
     sad: { act: { type: Number, maxLength: 10, defaultValue: 0 }, id_user: [String] },
+    only: [{ id: { type: String, maxLength: 1 }, icon: { type: String, maxLength: 10 } }],
 };
 const comments = [
     {
