@@ -1,6 +1,7 @@
 import { file } from 'googleapis/build/src/apis/file';
 import DateTime from '../../../DateTimeCurrent/DateTimeCurrent';
 import { NewPost } from '../../../models/mongodb/SN_DB/home';
+import { ExpChucks } from '../../../middleware/uploadGridFS';
 
 const db = require('../../../models');
 
@@ -18,7 +19,11 @@ class HomeServiceSN {
     ) => {
         return new Promise(async (resolve, reject) => {
             try {
+                const id_c = files.map((f: any) => f.id);
                 const imageOrVideos: any = files.map((f: any) => {
+                    console.log(f.id, 'ff', f);
+                    ExpChucks(f.id, 12);
+
                     return {
                         file: f.metadata.id_file.toString(),
                         title: f.metadata.title,
@@ -40,7 +45,7 @@ class HomeServiceSN {
                         expireAfterSeconds: expire,
                     });
                     console.log(res, 'res expire');
-                    resolve(res);
+                    resolve({ data: res, id_c });
                 } else {
                     const res = await NewPost.create({
                         id_user: id,
@@ -54,7 +59,7 @@ class HomeServiceSN {
                         createdAt: DateTime(),
                     });
                     console.log(res, 'res no expire');
-                    resolve(res);
+                    resolve({ data: res, id_c });
                 }
             } catch (err) {
                 reject(err);

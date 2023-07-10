@@ -1,6 +1,7 @@
+import { ExpChucks } from '../../../middleware/uploadGridFS';
 import HomeServiceSN from '../../../services/WebsServices/SocialNetwork/HomeServiceSN';
 class homeController {
-    setPost = async (req: any, res: any) => {
+    setPost = async (req: any, res: any, next: any) => {
         try {
             const id = req.cookies.k_user;
             let more: { title?: string; bg?: string; column?: number } = {};
@@ -21,8 +22,7 @@ class homeController {
                 const bg = req.body.bg;
                 more = { bg, column };
             }
-
-            console.log(value, files, req.body);
+            console.log(value, files, req.body, 'body');
 
             const data = await HomeServiceSN.setPost(
                 id,
@@ -35,6 +35,7 @@ class homeController {
                 JSON.parse(privates),
                 JSON.parse(imotions),
             );
+
             return res.status(200).json(data);
         } catch (error) {
             console.log(error);
@@ -46,6 +47,21 @@ class homeController {
             // const data: any = await userService.getUserShareNews();
             // return res.status(200).json(data);
             // return res.status(200).json('hello');
+        } catch (e) {
+            console.log(e);
+        }
+    };
+    expireChunks = (req: any, res: any) => {
+        try {
+            const chucks: { id_c: string[]; exp: number } = req.body.params;
+            console.log(chucks, 'dataa here');
+            if (chucks.id_c.length > 0) {
+                chucks.id_c.map((c: string) => {
+                    console.log('cc', c);
+
+                    ExpChucks(c, chucks.exp);
+                });
+            }
         } catch (e) {
             console.log(e);
         }
