@@ -14,8 +14,8 @@ module.exports = (sequelize: any, DataTypes: { STRING: any; INTEGER: any; DATE: 
     }
     follows.init(
         {
-            id_following: DataTypes.STRING,
-            id_followed: DataTypes.STRING,
+            id_following: DataTypes.STRING, // Is you follow others first
+            id_followed: DataTypes.STRING, // Is followed from you
             flwing: DataTypes.INTEGER,
             flwed: DataTypes.INTEGER,
             createdAt: DataTypes.DATE,

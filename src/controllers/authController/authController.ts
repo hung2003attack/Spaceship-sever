@@ -14,9 +14,7 @@ class authController {
             console.log('close');
             if (userData) {
                 return res.status(200).json({
-                    errCode: userData.errCode,
-                    errMessage: userData.errMessage,
-                    user: userData.data ? userData.data : {},
+                    user: userData.data ? userData.data : null,
                 });
             }
         }

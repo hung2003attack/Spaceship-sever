@@ -15,7 +15,6 @@ class SendChatService {
                 const AllOfFile: string[] = [];
                 const imagesOrVideos: { v: any; icon: string }[] = [];
                 const res = await RoomChats.findOne({ _id: ObjectId(id_room), id_us: { $all: [id, id_others] } });
-                console.log(res, 'RoomChats.findOne');
                 if (ids_file) {
                     for (let id of ids_file) {
                         AllOfFile.push(id);
@@ -68,7 +67,6 @@ class SendChatService {
                             { raw: true },
                         );
                     }
-                    console.log(res, 'send chat', DateTime(), room);
                     resolve(room);
                 } else {
                     console.log(ids_file, 'ids_file');
@@ -113,7 +111,6 @@ class SendChatService {
                     .then((rs: any) => rs.map((r: { id_room: any }) => r.id_room));
 
                 const newId = res_id.map((id: any) => ObjectId(id));
-                console.log(res_id, 'res_id', newId);
                 const roomChat = await RoomChats.aggregate([
                     { $match: { _id: { $in: newId } } }, // Lọc theo điều kiện tương ứng với _id của document
                     { $unwind: '$room' }, // Tách mỗi phần tử trong mảng room thành một document riêng
@@ -130,7 +127,6 @@ class SendChatService {
                     }, // Gom các document thành một mảng room
                     { $sort: { 'room.createdAt': -1 } },
                 ]);
-                console.log(roomChat, 'roomChat');
                 const newData = await new Promise<any>(async (resolve2, reject) => {
                     try {
                         await Promise.all(
@@ -163,8 +159,6 @@ class SendChatService {
                         reject(error);
                     }
                 });
-
-                console.log(newData);
 
                 resolve(newData);
             } catch (error) {
@@ -199,7 +193,6 @@ class SendChatService {
                         $group: Group,
                     }, // Group the documents and reconstruct the room array
                 ]);
-                console.log(roomChat[0], 'roomChat', of);
                 resolve(roomChat[0]);
             } catch (error) {
                 reject(error);

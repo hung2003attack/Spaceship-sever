@@ -23,7 +23,7 @@ class AuthServices {
                 const dateTime = moment().format('HH:mm:ss DD-MM-YYYY');
                 console.log('isExist', isExist);
                 if (status && user.length > 0) {
-                    user.map(async (u: any) => {
+                    user.map((u: any) => {
                         const checkP = bcrypt.compareSync(password, u.password);
                         if (checkP) {
                             delete u.password;
@@ -127,9 +127,8 @@ class AuthServices {
                             //     console.log(reply);
                             // });
 
-                            userData.errCode = 1;
-                            const accessToken = await Token.accessTokenF(u);
-                            const refreshToken = await Token.refreshTokenF(u);
+                            const accessToken = Token.accessTokenF(u);
+                            const refreshToken = Token.refreshTokenF(u);
 
                             Object.freeze(u);
                             res.cookie('sn', refreshToken, {
@@ -142,12 +141,8 @@ class AuthServices {
                             });
                             userData.errCode = 1;
                             userData.data = { ...u, accessToken };
-                        } else {
-                            userData.errCode = 0;
                         }
                     });
-                } else {
-                    userData.errCode = 0;
                 }
                 resolve(userData);
             } catch (err) {

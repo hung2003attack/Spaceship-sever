@@ -4,7 +4,6 @@ import homeController from '../../../controllers/websController/socialNetwork/ho
 import { upload } from '../../../middleware/uploadGridFS';
 
 const router = express.Router();
-router.get('/', homeController.getPost);
+router.get('/getPosts', homeController.getPosts);
 router.post('/setPost', upload.array('files'), homeController.setPost);
-router.post('/expireChunks', homeController.expireChunks);
 export default router;

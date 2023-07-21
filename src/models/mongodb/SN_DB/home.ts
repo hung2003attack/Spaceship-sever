@@ -14,6 +14,7 @@ const comments = [
             required: true,
             maxLength: 50,
         },
+        anonymous: { type: Boolean, defaultValue: false },
         content: {
             text: { type: String, text: String },
             imageOrVideos: [{ file: { type: String, maxLength: 50 }, feel }],
@@ -24,33 +25,60 @@ const comments = [
                 id_user: { type: String, maxLength: 50, required: true },
                 content: { text: { type: String, text: String }, imageOrVideos: [String] },
                 feel,
-                private: { type: Boolean, defaultValue: false },
+                anonymous: { type: Boolean, defaultValue: false },
             },
         ],
-        private: { type: Boolean, defaultValue: false },
     },
 ];
 const Posts = new Schema({
     id_user: { type: String, maxLength: 50, required: true },
-    type: { type: Number, maxLength: 1 },
+    category: { type: Number, maxLength: 1 },
     content: {
         text: { type: String, text: String },
-        imageOrVideos: [
-            {
-                file: { type: String, maxLength: 50 },
-                title: { type: String, maxLength: 100 },
-                love: { act: { type: Number, maxLength: 11, defaultValue: 0 }, id_user: [String] },
-                comments,
-                options: { Bgcolors: { type: String, maxLength: 10 }, column: { type: Number, maxLength: 2 } },
+        fontFamily: { type: String, maxLength: 20 },
+        options: {
+            default: [
+                {
+                    file: { type: String, maxLength: 50 },
+                    title: { type: String, maxLength: 100 },
+                    love: { act: { type: Number, maxLength: 11, defaultValue: 0 }, id_user: [String] },
+                    comments,
+                },
+            ],
+            swiper: {
+                id: { type: Number, maxLength: 1 },
+                name: { type: String, maxLength: 20 },
+                // raw: { type: Number, maxLength: 1 },
+                // column: { type: Number, maxLength: 1 },
+                data: {
+                    file: [{ type: String, maxLength: 50 }],
+                    centered: [
+                        {
+                            id: { type: Number, maxLength: 1 },
+                            columns: { type: Number, maxLength: 1 },
+                            data: [String],
+                        },
+                    ],
+                },
             },
-        ],
+            grid: {
+                file: [{ type: String, maxLength: 50 }],
+                BgColor: { type: String, maxLength: 10 },
+                column: { type: Number, maxLength: 2 },
+            },
+            onlyImage: [{ type: String, maxLength: 50 }],
+        },
     },
     feel,
     amountComments: { type: Number, maxLength: 11, default: 0 },
     commentsOne: comments,
     commentsTwo: comments,
     commentsThree: comments,
-    private: { type: Boolean, defaultValue: false },
+    whoCanSeePost: {
+        id: { type: Number, maxLength: 1 },
+        name: { type: String, maxLength: 20 },
+    },
+    private: [{ id: { type: Number, maxLength: 1 }, name: { type: String, maxLength: 20 } }],
     createdAt: { type: Date, required: true, default: Date.now() },
 });
 export const NewPost = mongoose.model('NewPost', Posts);

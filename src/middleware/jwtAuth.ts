@@ -21,11 +21,11 @@ class JWTVERIFY {
                 return res.status(401).json({ message: 'Unauthorized!' });
             } else {
                 try {
-                    await jwt.verify(tokenc, `${process.env.ACCESS_TOKEN_LOGIN}`, (err: any, user: any) => {
+                    jwt.verify(tokenc, `${process.env.ACCESS_TOKEN_LOGIN}`, (err: any, user: any) => {
                         // user: {id:string;  iat: number; exp: number}
                         if (err || user.id !== idUser) {
                             token.deleteToken(res);
-                            return res.status(404).json({ status: 0, message: 'Not Found' });
+                            return res.status(403).json({ status: 0, message: 'Token is not valid' });
                         }
 
                         // redisClients.lrange(user.id + 'browserIds', 0, -1, (err: any, id_user_browsers: string[]) => {

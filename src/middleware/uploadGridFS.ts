@@ -12,12 +12,19 @@ const router = express.Router();
 const URL = 'mongodb+srv://Spaceship:hung0507200301645615023@cluster0.chumwfw.mongodb.net/spaceship';
 let gfs: any;
 let conllection: any;
-const conn = mongoose.createConnection(URL);
-conn.once('open', () => {
-    gfs = Grid(conn.db, mongoose.mongo);
-    conllection = gfs.collection('uploads');
-    conllection.createIndex({ uploadDate: 1 }, { expireAfterSeconds: 0 });
-});
+mongoose
+    .connect(URL)
+    .then(() => {
+        console.log('Connected to MongoDB');
+        // Initialize GridFS and the collection
+        const gfs = Grid(mongoose.connection.db, mongoose.mongo);
+        const collection = gfs.collection('uploads');
+
+        // ... Your other code related to file upload and GridFsStorage ...
+    })
+    .catch((error) => {
+        console.error('Error connecting to MongoDB:', error);
+    });
 const storage = new GridFsStorage({
     url: URL,
     file: (req: any, files: { originalname: any }) => {
@@ -57,7 +64,7 @@ export const ExpChucks = async (id: string, expireAt: number) => {
 
     // setTimeout(async () => {
     try {
-        const chunksCollection = conn.db.collection('uploads.chunks');
+        // const chunksCollection = conn.db.collection('uploads.chunks');
         console.log(ObjectId(id), 'files_id', expireAt);
     } catch (error) {
         console.log(error);

@@ -1,7 +1,8 @@
 import { file } from 'googleapis/build/src/apis/file';
 import DateTime from '../../../DateTimeCurrent/DateTimeCurrent';
 import { NewPost } from '../../../models/mongodb/SN_DB/home';
-import { ExpChucks } from '../../../middleware/uploadGridFS';
+const Sequelize = require('sequelize');
+const Op = Sequelize.Op;
 
 const db = require('../../../models');
 
@@ -12,69 +13,180 @@ class HomeServiceSN {
         category: number,
         fontFamily: string,
         files: any,
-        more: { title?: string; bg?: string; column?: number },
-        expire: number,
         privates: { id: number; name: string }[],
+        whoCanSeePost: { id: number; name: string },
         imotigons: { id: number; name: string }[],
+        categoryOfSwiper: { id: number; name: string },
+        Centered1: {
+            id: number;
+            columns: number;
+            data: string[];
+        },
+        Centered2: {
+            id: number;
+            columns: number;
+            data: string[];
+        },
+        Centered3: {
+            id: number;
+            columns: number;
+            data: string[];
+        },
+        BgColor: string,
+        columnGrid: number,
     ) => {
         return new Promise(async (resolve, reject) => {
             try {
                 const id_c = files.map((f: any) => f.id);
-                const imageOrVideos: any = files.map((f: any) => {
-                    console.log(f.id, 'ff', f);
-                    ExpChucks(f.id, 12);
+                let options = {};
+                const imageOrVideos: any = files.map((f: any) => f.metadata.id_file.toString());
 
-                    return {
-                        file: f.metadata.id_file.toString(),
-                        title: f.metadata.title,
-                        options: more,
-                    };
-                });
-                console.log(imageOrVideos, 'ids_file', value, fontFamily, id);
-                if (expire) {
-                    const res = await NewPost.create({
-                        id_user: id,
-                        content: {
-                            text: value,
-                            imageOrVideos: imageOrVideos,
-                        },
-                        feel: {
-                            only: imotigons,
-                        },
-                        createdAt: DateTime(),
-                        expireAfterSeconds: expire,
-                    });
-                    console.log(res, 'res expire');
-                    resolve({ data: res, id_c });
-                } else {
-                    const res = await NewPost.create({
-                        id_user: id,
-                        content: {
-                            text: value,
-                            imageOrVideos: imageOrVideos,
-                        },
-                        feel: {
-                            only: imotigons,
-                        },
-                        createdAt: DateTime(),
-                    });
-                    console.log(res, 'res no expire');
-                    resolve({ data: res, id_c });
+                switch (category) {
+                    case 0:
+                        const imageOrVideosDe: any = files.map((f: any) => {
+                            return {
+                                file: f.metadata.id_file.toString(),
+                                title: f.metadata.title,
+                            };
+                        });
+                        options = {
+                            default: imageOrVideosDe,
+                        };
+                        console.log(options, '0');
+
+                        break;
+                    case 1:
+                        let data = {};
+                        if (categoryOfSwiper.id === 5 && categoryOfSwiper.name === 'Centered') {
+                            const centered = [];
+                            if (Centered1) centered.push(Centered1);
+
+                            if (Centered2) centered.push(Centered2);
+                            if (Centered3) centered.push(Centered3);
+                            data = {
+                                centered,
+                            };
+                        } else {
+                            data = {
+                                file: imageOrVideos,
+                            };
+                        }
+                        options = {
+                            swiper: {
+                                id: categoryOfSwiper.id,
+                                name: categoryOfSwiper.name,
+                                data,
+                            },
+                        };
+                        break;
+                    case 2:
+                        options = {
+                            grid: {
+                                file: imageOrVideos,
+                                BgColor,
+                                column: columnGrid,
+                            },
+                        };
+                        break;
+                    case 3:
+                        options = {
+                            onlyImage: imageOrVideos,
+                        };
+                        break;
                 }
+                console.log(options, 'options', category);
+
+                const res = await NewPost.create({
+                    id_user: id,
+                    category,
+                    content: {
+                        text: value,
+                        fontFamily: fontFamily,
+                        options,
+                    },
+                    feel: {
+                        only: imotigons,
+                    },
+                    private: privates,
+                    whoCanSeePost,
+                    createdAt: DateTime(),
+                });
+                console.log(res, 'res no expire');
+                resolve({ data: res, id_c });
             } catch (err) {
                 reject(err);
             }
         });
     };
-    getPost = () => {
+    getPosts = (id: string, limit: number, offset: number, status: string) => {
         return new Promise(async (resolve, reject) => {
+            // is friend (following) -> not friend (following) + interact (max -> min) = view posts
+            // whoever - is friend or not friend is status: anyone
             try {
-                const data = await db.users.findAll({
-                    attributes: ['id', 'fullName', 'avatar'],
-                    raw: true,
-                });
+                if (status === 'friend') {
+                    // get id_followeds
+                    const friends_id = await db.friends
+                        .findAll({
+                            where: {
+                                [Op.or]: [
+                                    { idCurrentUser: id, level: 2 },
+                                    { idFriend: id, level: 2 },
+                                ],
+                            },
+                            attributes: ['idFriend', 'idCurrentUser'],
+                            raw: true,
+                        })
+                        .then((fr: { idFriend: string; idCurrentUser: string }[]) =>
+                            fr.map((f) =>
+                                f.idFriend !== id ? f.idFriend : f.idCurrentUser !== id ? f.idCurrentUser : '',
+                            ),
+                        );
+                    // get idfollows
+                    const follow_id = await db.follows
+                        .findAll({
+                            where: {
+                                [Op.or]: [
+                                    {
+                                        id_following: { [Op.in]: friends_id },
+                                        id_followed: id,
+                                        flwed: 2,
+                                    },
+                                    { id_followed: { [Op.in]: friends_id }, id_following: id, flwing: 2 },
+                                ],
+                            },
+                        })
+                        .then((fr: { id_following: string; id_followed: string }[]) =>
+                            fr.map((f) => (f.id_following !== id ? f.id_following : f.id_followed)),
+                        );
+                    // friend + following
+                    const dataPost = await NewPost.find({ id_user: { $in: follow_id } }).sort({ createdAt: 1 });
+                    console.log(dataPost, 'dataPost');
 
-                resolve(data);
+                    // const follow_id = await db.follows
+                    //     .findAll({
+                    //         where: {
+                    //             [Op.or]: [
+                    //                 { id_following: id, flwing: 2 },
+                    //                 { id_followed: id, flwed: 2 },
+                    //             ],
+                    //         },
+                    //     })
+                    //     .then((fr: { id_following: string; id_followed: string }[]) =>
+                    //         fr.map((f) =>
+                    //             f.id_following !== id
+                    //                 ? f.id_following
+                    //                 : f.id_followed !== id
+                    //                 ? f.id_followed
+                    //                 : f.id_following,
+                    //         ),
+                    //     );
+                    resolve(dataPost);
+                    console.log(friends_id, 'friends_id', follow_id, 'follow_id');
+                }
+                // const data = await db.users.findAll({
+                //     attributes: ['id', 'fullName', 'avatar'],
+                //     raw: true,
+                // });
             } catch (err) {
                 reject(err);
             }
