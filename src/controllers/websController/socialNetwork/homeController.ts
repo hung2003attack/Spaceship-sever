@@ -1,14 +1,18 @@
+import axios from 'axios';
 import HomeServiceSN from '../../../services/WebsServices/SocialNetwork/HomeServiceSN';
 class homeController {
     setPost = async (req: any, res: any, next: any) => {
         try {
+            console.log(req.body);
+
             const id = req.cookies.k_user;
             const io = res.io;
 
             const value = req.body.text;
             const files = req.files;
-            const category = JSON.parse(req.body.category); // must be number
+            const category = req.body.category ? JSON.parse(req.body.category) : undefined; // must be number
             const fontFamily = req.body.fontFamily;
+            const act = req.body.act ? JSON.parse(req.body.act) : undefined;
             // const expire = req.body.expire;
             const privates = req.body.privacy ? JSON.parse(req.body.privacy) : undefined;
             const whoCanSeePost = req.body.whoSeePost ? JSON.parse(req.body.whoSeePost) : undefined;
@@ -56,8 +60,9 @@ class homeController {
                 Centered3,
                 BgColor,
                 columnGrid,
+                act, //icon imotion
             );
-            // return res.status(200).json(data);
+            return res.status(200).json(data);
         } catch (error) {
             console.log(error);
         }
@@ -72,8 +77,8 @@ class homeController {
             console.log(offset, 'offset', status, 'status');
             const data: any = await HomeServiceSN.getPosts(id, limit, offset, status);
             return res.status(200).json(data);
-        } catch (e) {
-            console.log(e);
+        } catch (error) {
+            console.error('Error Server:', error);
         }
     };
 }

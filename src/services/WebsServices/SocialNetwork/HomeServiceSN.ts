@@ -13,7 +13,7 @@ class HomeServiceSN {
         category: number,
         fontFamily: string,
         files: any,
-        privates: { id: number; name: string }[],
+        privates: { id: number; name: string }[], // lists of privacies
         whoCanSeePost: { id: number; name: string },
         imotigons: { id: number; name: string }[],
         categoryOfSwiper: { id: number; name: string },
@@ -34,12 +34,13 @@ class HomeServiceSN {
         },
         BgColor: string,
         columnGrid: number,
+        act: number,
     ) => {
         return new Promise(async (resolve, reject) => {
             try {
-                const id_c = files.map((f: any) => f.id);
+                const id_c = files?.map((f: any) => f.id);
                 let options = {};
-                const imageOrVideos: any = files.map((f: any) => f.metadata.id_file.toString());
+                const imageOrVideos: any = files?.map((f: any) => f.metadata.id_file.toString());
 
                 switch (category) {
                     case 0:
@@ -106,6 +107,8 @@ class HomeServiceSN {
                     },
                     feel: {
                         only: imotigons,
+                        amount: 0,
+                        act: act,
                     },
                     private: privates,
                     whoCanSeePost,
@@ -159,8 +162,36 @@ class HomeServiceSN {
                             fr.map((f) => (f.id_following !== id ? f.id_following : f.id_followed)),
                         );
                     // friend + following
-                    const dataPost = await NewPost.find({ id_user: { $in: follow_id } }).sort({ createdAt: 1 });
-                    console.log(dataPost, 'dataPost');
+                    // const dataPost = await NewPost.aggregate([
+                    //     { $match: { id_user: { $in: follow_id } } },
+                    //     { $unwind: '$commentsOne' },
+                    //     { $sort: { 'commentsOne.feel.amount': -1 } },
+                    //     {
+                    //         $group: {
+                    //             _id: '$_id',
+                    //             commentsOne: { $first: '$commentsOne' },
+                    //         },
+                    //     },
+                    // ]);
+                    const dataPost = await NewPost.find({ id_user: { $in: follow_id } }).sort({ createdAt: -1 });
+                    const newData = await new Promise(async (resolve, reject) => {
+                        try {
+                            await Promise.all(
+                                dataPost.map(async (p: any, index: number) => {
+                                    const users = await db.users.findAll({
+                                        where: { id: p.id_user },
+                                        attributes: ['id', 'Avatar', 'fullName', 'gender'],
+                                        raw: true,
+                                    });
+                                    dataPost[index].user = users;
+                                }),
+                            );
+                            resolve(dataPost);
+                        } catch (error) {
+                            console.log('Error: get post', error);
+                        }
+                    });
+                    // console.log(dataPost, 'dataPost', users);
 
                     // const follow_id = await db.follows
                     //     .findAll({
@@ -180,8 +211,8 @@ class HomeServiceSN {
                     //                 : f.id_following,
                     //         ),
                     //     );
-                    resolve(dataPost);
-                    console.log(friends_id, 'friends_id', follow_id, 'follow_id');
+                    console.log(newData, 'newData');
+                    resolve(newData);
                 }
                 // const data = await db.users.findAll({
                 //     attributes: ['id', 'fullName', 'avatar'],

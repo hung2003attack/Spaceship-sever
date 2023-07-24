@@ -27,6 +27,7 @@ class RefreshTokenCookie {
                 sameSite: 'strict',
                 expires: new Date(new Date().getTime() + 365 * 86409000),
             });
+            //360 days
             return res.status(200).json({ newAccessToken: newAccessToken });
         });
     };
