@@ -1,5 +1,6 @@
 const { Sequelize } = require('sequelize');
 import mongoose from 'mongoose';
+import Grid from 'gridfs-stream';
 
 require('dotenv').config();
 class Server {

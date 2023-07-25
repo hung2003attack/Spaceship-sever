@@ -23,6 +23,7 @@ class SendChatService {
                     }
                 }
                 if (!res) {
+                    // create if it doesn't exist
                     const friend = await db.friends.findOne({
                         where: {
                             [Op.or]: [
@@ -69,6 +70,7 @@ class SendChatService {
                     }
                     resolve(room);
                 } else {
+                    //update it still exist
                     console.log(ids_file, 'ids_file');
                     console.log(id_room, value, 'value', id, id_others);
                     const arr: any = {
@@ -89,8 +91,7 @@ class SendChatService {
                         },
                         { $push: { room: arr, imageOrVideos: { $each: AllOfFile } } },
                     );
-
-                    resolve(roomUpdate.acknowledged);
+                    if (roomUpdate.acknowledged) resolve(arr);
                 }
             } catch (error) {
                 reject(error);
@@ -110,7 +111,7 @@ class SendChatService {
                     })
                     .then((rs: any) => rs.map((r: { id_room: any }) => r.id_room));
 
-                const newId = res_id.map((id: any) => ObjectId(id));
+                const newId = res_id.map((id_room: any) => ObjectId(id_room));
                 const roomChat = await RoomChats.aggregate([
                     { $match: { _id: { $in: newId } } }, // Lọc theo điều kiện tương ứng với _id của document
                     { $unwind: '$room' }, // Tách mỗi phần tử trong mảng room thành một document riêng

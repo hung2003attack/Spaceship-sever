@@ -19,7 +19,7 @@ class SendChat {
             if (id_others) {
                 const data = await SendChatServiceSN.send(id_room, id, id_others, value, files);
 
-                if (data) io.emit(`${id_others}roomChat`);
+                if (data) io.emit(`${id_others}roomChat`, data);
                 return res.status(200).json(data);
             }
         } catch (error) {

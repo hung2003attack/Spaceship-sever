@@ -5,6 +5,7 @@ import searchRoute from './socialNetwork/searchRouterSN';
 import userRoute from './user';
 import peopleRoute from './socialNetwork/people';
 import sendChat from './sendChat';
+import fileGridFS from './fileGridFS';
 function routeSN(app: any) {
     console.log('erararea');
     app.use('/api/SN/user', userRoute);
@@ -12,5 +13,6 @@ function routeSN(app: any) {
     app.use('/api/SN/profile', searchRoute);
     app.use('/api/SN/people', peopleRoute);
     app.use('/api/SN/sendChat', sendChat);
+    app.use('/api/fileGridFS', fileGridFS);
 }
 export default routeSN;
